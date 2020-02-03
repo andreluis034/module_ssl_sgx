@@ -33,8 +33,8 @@
 #include <stdio.h>      /* vsnprintf */
 #include <stdarg.h>
 
-#include "TestEnclave.h"
-#include "TestEnclave_t.h"  /* print_string */
+#include "Enclave.h"
+#include "Enclave_t.h"  /* print_string */
 #include "tSgxSSL_api.h"
 
 #include <openssl/ec.h>
@@ -57,7 +57,7 @@ void printf(const char *fmt, ...)
     va_start(ap, fmt);
     vsnprintf(buf, BUFSIZ, fmt, ap);
     va_end(ap);
-    uprint(buf);
+    ocall_print_string(buf);
 }
 
 typedef void CRYPTO_RWLOCK;
@@ -234,7 +234,7 @@ int vprintf_cb(Stream_t stream, const char * fmt, va_list arg)
 
 	int res = vsnprintf(buf, BUFSIZ, fmt, arg);
 	if (res >=0) {
-		sgx_status_t sgx_ret = uprint((const char *) buf);
+		sgx_status_t sgx_ret = ocall_print_string((const char *) buf);
 		TEST_CHECK(sgx_ret);
 	}
 	return res;

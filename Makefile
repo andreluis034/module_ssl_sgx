@@ -93,6 +93,8 @@ all:
 
 test:
 	$(MAKE) -f sgx_u.mk test
+install: all
+	cp mod_example.so Enclave.signed.so /opt/httpd/modules
 
 clean:
 	$(MAKE) -f sgx_u.mk clean

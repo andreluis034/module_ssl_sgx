@@ -34,7 +34,7 @@
 ######## SGX SDK Settings ########
 SGX_MODE ?= HW
 SGX_ARCH ?= x64
-ENCLAVE_DIR=enclave
+ENCLAVE_DIR=Enclave
 
 ifeq ($(shell getconf LONG_BIT), 32)
 	SGX_ARCH := x86
@@ -106,23 +106,23 @@ endif
 endif
 
 								
-TestEnclave_Cpp_Files := $(wildcard $(ENCLAVE_DIR)/*.cpp) 
-TestEnclave_C_Files := $(wildcard $(ENCLAVE_DIR)/*.c) 
+Enclave_Cpp_Files := $(wildcard $(ENCLAVE_DIR)/*.cpp) 
+Enclave_C_Files := $(wildcard $(ENCLAVE_DIR)/*.c) 
 
-TestEnclave_Cpp_Objects := $(TestEnclave_Cpp_Files:.cpp=.o)
-TestEnclave_C_Objects := $(TestEnclave_C_Files:.c=.o)
+Enclave_Cpp_Objects := $(Enclave_Cpp_Files:.cpp=.o)
+Enclave_C_Objects := $(Enclave_C_Files:.c=.o)
 
-TestEnclave_Include_Paths := -I. -I$(ENCLAVE_DIR) -I$(SGX_SDK_INC) -I$(SGX_SDK_INC)/tlibc -I$(LIBCXX_INC) -I$(PACKAGE_INC)
+Enclave_Include_Paths := -I. -I$(ENCLAVE_DIR) -I$(SGX_SDK_INC) -I$(SGX_SDK_INC)/tlibc -I$(LIBCXX_INC) -I$(PACKAGE_INC)
 
-Common_C_Cpp_Flags := -DOS_ID=$(OS_ID) $(SGX_COMMON_CFLAGS) -nostdinc -fvisibility=hidden -fpic -fpie -fstack-protector -fno-builtin-printf -Wformat -Wformat-security $(TestEnclave_Include_Paths) -include "tsgxsslio.h"
-TestEnclave_C_Flags := $(Common_C_Cpp_Flags) -Wno-implicit-function-declaration -std=c11
-TestEnclave_Cpp_Flags :=  $(Common_C_Cpp_Flags) -std=c++11 -nostdinc++
+Common_C_Cpp_Flags := -DOS_ID=$(OS_ID) $(SGX_COMMON_CFLAGS) -nostdinc -fvisibility=hidden -fpic -fpie -fstack-protector -fno-builtin-printf -Wformat -Wformat-security $(Enclave_Include_Paths) -include "tsgxsslio.h"
+Enclave_C_Flags := $(Common_C_Cpp_Flags) -Wno-implicit-function-declaration -std=c11
+Enclave_Cpp_Flags :=  $(Common_C_Cpp_Flags) -std=c++11 -nostdinc++
 
 SgxSSL_Link_Libraries := -L$(OPENSSL_LIBRARY_PATH) -Wl,--whole-archive -l$(SGXSSL_Library_Name) -Wl,--no-whole-archive \
 						 -l$(OpenSSL_Crypto_Library_Name)
 Security_Link_Flags := -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now -pie
 
-TestEnclave_Link_Flags := $(SGX_COMMON_CFLAGS) -Wl,--no-undefined -nostdlib -nodefaultlibs -nostartfiles \
+Enclave_Link_Flags := $(SGX_COMMON_CFLAGS) -Wl,--no-undefined -nostdlib -nodefaultlibs -nostartfiles \
 	$(Security_Link_Flags) \
 	$(SgxSSL_Link_Libraries) -L$(SGX_LIBRARY_PATH) \
 	-Wl,--whole-archive -l$(Trts_Library_Name) -Wl,--no-whole-archive \
@@ -130,45 +130,45 @@ TestEnclave_Link_Flags := $(SGX_COMMON_CFLAGS) -Wl,--no-undefined -nostdlib -nod
 	-Wl,-Bstatic -Wl,-Bsymbolic -Wl,--no-undefined \
 	-Wl,-pie,-eenclave_entry -Wl,--export-dynamic  \
 	-Wl,--defsym,__ImageBase=0 \
-	-Wl,--version-script=$(ENCLAVE_DIR)/TestEnclave.lds
+	-Wl,--version-script=$(ENCLAVE_DIR)/Enclave.lds
 
 
 .PHONY: all test
 
-all: TestEnclave.signed.so
+all: Enclave.signed.so
 # usually release mode don't sign the enclave, but here we want to run the test also in release mode
 # this is not realy a release mode as the XML file don't disable debug - we can't load real release enclaves (white list)
 
 test: all
 
 
-######## TestEnclave Objects ########
+######## Enclave Objects ########
 
-$(ENCLAVE_DIR)/TestEnclave_t.c: $(SGX_EDGER8R) $(ENCLAVE_DIR)/TestEnclave.edl
-	@cd $(ENCLAVE_DIR) && $(SGX_EDGER8R) --trusted TestEnclave.edl --search-path $(PACKAGE_INC) --search-path $(SGX_SDK_INC)
+$(ENCLAVE_DIR)/Enclave_t.c: $(SGX_EDGER8R) $(ENCLAVE_DIR)/Enclave.edl
+	@cd $(ENCLAVE_DIR) && $(SGX_EDGER8R) --trusted Enclave.edl --search-path $(PACKAGE_INC) --search-path $(SGX_SDK_INC)
 	@echo "GEN  =>  $@"
 
-$(ENCLAVE_DIR)/TestEnclave_t.o: $(ENCLAVE_DIR)/TestEnclave_t.c
-	$(VCC) $(TestEnclave_C_Flags) -c $< -o $@
+$(ENCLAVE_DIR)/Enclave_t.o: $(ENCLAVE_DIR)/Enclave_t.c
+	$(VCC) $(Enclave_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
 
 $(ENCLAVE_DIR)/%.o: $(ENCLAVE_DIR)/%.cpp
-	$(VCXX) $(TestEnclave_Cpp_Flags) -c $< -o $@
+	$(VCXX) $(Enclave_Cpp_Flags) -c $< -o $@
 	@echo "CXX  <=  $<"
 
 $(ENCLAVE_DIR)/%.o: $(ENCLAVE_DIR)/%.c
-	$(VCC) $(TestEnclave_C_Flags) -c $< -o $@
+	$(VCC) $(Enclave_C_Flags) -c $< -o $@
 	@echo "CC  <=  $<"
 
 
-TestEnclave.so: $(ENCLAVE_DIR)/TestEnclave_t.o $(TestEnclave_Cpp_Objects) $(TestEnclave_C_Objects)
-	$(VCXX) $^ -o $@ $(TestEnclave_Link_Flags)
+Enclave.so: $(ENCLAVE_DIR)/Enclave_t.o $(Enclave_Cpp_Objects) $(Enclave_C_Objects)
+	$(VCXX) $^ -o $@ $(Enclave_Link_Flags)
 	@echo "LINK =>  $@"
 
-TestEnclave.signed.so: TestEnclave.so
-	@$(SGX_ENCLAVE_SIGNER) sign -key $(ENCLAVE_DIR)/TestEnclave_private.pem -enclave TestEnclave.so -out $@ -config $(ENCLAVE_DIR)/TestEnclave.config.xml
+Enclave.signed.so: Enclave.so
+	@$(SGX_ENCLAVE_SIGNER) sign -key $(ENCLAVE_DIR)/Enclave_private.pem -enclave Enclave.so -out $@ -config $(ENCLAVE_DIR)/Enclave.config.xml
 	@echo "SIGN =>  $@"
 
 clean:
-	@rm -f TestEnclave.* $(ENCLAVE_DIR)/TestEnclave_t.* $(TestEnclave_Cpp_Objects) $(TestEnclave_C_Objects)
+	@rm -f Enclave.* $(ENCLAVE_DIR)/Enclave_t.* $(Enclave_Cpp_Objects) $(Enclave_C_Objects)
 

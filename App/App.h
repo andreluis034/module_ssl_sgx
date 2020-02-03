@@ -29,24 +29,38 @@
  *
  */
 
-/* TestEnclave.edl - Top EDL file. */
+#ifndef _APP_H_
+#define _APP_H_
 
-enclave {
-    
-from "sgx_tsgxssl.edl" import *;
+#include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
 
-    /* 
-     * uprint - invokes OCALL to display string buffer inside the enclave.
-     *  [in]: copy the string buffer to App outside.
-     *  [string]: specifies 'str' is a NULL terminated buffer.
-     */
-    untrusted {
-        void uprint([in, string] const char *str);
-        void usgx_exit(int reason);
-    };
+#include "sgx_error.h"       /* sgx_status_t */
+#include "sgx_eid.h"     /* sgx_enclave_id_t */
+
+#ifndef TRUE
+# define TRUE 1
+#endif
+
+#ifndef FALSE
+# define FALSE 0
+#endif
 
 
-    trusted {
-        public void t_sgxssl_call_apis();
-    };
-};
+
+#define ENCLAVE_FILENAME "Enclave.signed.so"
+
+
+extern sgx_enclave_id_t global_eid;    /* global enclave id */
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
+#if defined(__cplusplus)
+}
+#endif
+
+#endif /* !_APP_H_ */

@@ -34,8 +34,8 @@
 ######## SGX SDK Settings ########
 SGX_MODE ?= HW
 SGX_ARCH ?= x64
-UNTRUSTED_DIR=app
-
+UNTRUSTED_DIR=App
+BIN_OUTPUT=mod_example.so
 ifeq ($(shell getconf LONG_BIT), 32)
 	SGX_ARCH := x86
 else ifeq ($(findstring -m32, $(CXXFLAGS)), -m32)
@@ -78,12 +78,13 @@ endif
 ######## App Settings ########
 
 
-App_Cpp_Files := $(UNTRUSTED_DIR)/TestApp.cpp
+App_Cpp_Files := $(UNTRUSTED_DIR)/App.cpp
 App_Cpp_Objects := $(App_Cpp_Files:.cpp=.o)
 
-App_Include_Paths := -I$(UNTRUSTED_DIR) -I$(SGX_SDK_INC)
+App_Include_Paths := -I$(UNTRUSTED_DIR) -I$(SGX_SDK_INC) -I/opt/httpd/include  -I/usr/include/apr-1.0   -I/usr/include/apr-1.0 -I/usr/include
 
-App_C_Flags := $(SGX_COMMON_CFLAGS) -fpic -fpie -fstack-protector -Wformat -Wformat-security -Wno-attributes $(App_Include_Paths)
+App_C_Flags := -fPIC -Wno-attributes -DLINUX -D_REENTRANT -D_GNU_SOURCE -pthread $(App_Include_Paths)
+
 App_Cpp_Flags := $(App_C_Flags) -std=c++11
 
 ifneq ($(SGX_MODE), HW)
@@ -97,38 +98,38 @@ endif
 
 Security_Link_Flags := -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now -pie
 
-App_Link_Flags := $(SGX_COMMON_CFLAGS) $(Security_Link_Flags) $(SGX_SHARED_LIB_FLAG) -L$(SGX_LIBRARY_PATH) -l$(Urts_Library_Name) -l$(UaeService_Library_Name) -L$(OPENSSL_LIBRARY_PATH) -l$(SgxSSL_Link_Libraries) -lpthread 
+App_Link_Flags := $(SGX_COMMON_CFLAGS) $(SGX_SHARED_LIB_FLAG) -L$(SGX_LIBRARY_PATH) -l$(Urts_Library_Name) -l$(UaeService_Library_Name) -L$(OPENSSL_LIBRARY_PATH) -l$(SgxSSL_Link_Libraries) -lpthread 
 
 
 .PHONY: all test
 
-all: TestApp
+all: $(BIN_OUTPUT)
 
 test: all
-	@$(CURDIR)/TestApp
-	@echo "RUN  =>  TestApp [$(SGX_MODE)|$(SGX_ARCH), OK]"
+	@$(CURDIR)/App
+	@echo "RUN  =>  App [$(SGX_MODE)|$(SGX_ARCH), OK]"
 
 ######## App Objects ########
 
-$(UNTRUSTED_DIR)/TestEnclave_u.c: $(SGX_EDGER8R) enclave/TestEnclave.edl
-	@cd $(UNTRUSTED_DIR) && $(SGX_EDGER8R) --untrusted ../enclave/TestEnclave.edl --search-path $(PACKAGE_INC) --search-path $(SGX_SDK_INC)
+$(UNTRUSTED_DIR)/Enclave_u.c: $(SGX_EDGER8R) Enclave/Enclave.edl
+	@cd $(UNTRUSTED_DIR) && $(SGX_EDGER8R) --untrusted ../Enclave/Enclave.edl --search-path $(PACKAGE_INC) --search-path $(SGX_SDK_INC)
 	@echo "GEN  =>  $@"
 
-$(UNTRUSTED_DIR)/TestEnclave_u.o: $(UNTRUSTED_DIR)/TestEnclave_u.c
-	$(VCC) $(App_C_Flags) -c $< -o $@
+$(UNTRUSTED_DIR)/Enclave_u.o: $(UNTRUSTED_DIR)/Enclave_u.c
+	$(VCC) $(SGX_COMMON_CFLAGS) $(App_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
 
 $(UNTRUSTED_DIR)/%.o: $(UNTRUSTED_DIR)/%.cpp
-	$(VCXX) $(App_Cpp_Flags) -c $< -o $@
+	$(VCXX) $(SGX_COMMON_CXXFLAGS) $(App_Cpp_Flags) -c $< -o $@
 	@echo "CXX  <=  $<"
 
-TestApp: $(UNTRUSTED_DIR)/TestEnclave_u.o $(App_Cpp_Objects)
-	$(VCXX) $^ -o $@ $(App_Link_Flags)
+$(BIN_OUTPUT): $(UNTRUSTED_DIR)/Enclave_u.o $(App_Cpp_Objects)
+	@$(CXX) -shared $^ -o $@ $(App_Link_Flags)
 	@echo "LINK =>  $@"
 
 
 .PHONY: clean
 
 clean:
-	@rm -f TestApp  $(App_Cpp_Objects) $(UNTRUSTED_DIR)/TestEnclave_u.* 
+	@rm -f app mod_example.so $(App_Cpp_Objects) $(UNTRUSTED_DIR)/Enclave_u.* 
 	
