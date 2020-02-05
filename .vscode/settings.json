@@ -1,0 +1,9 @@
+{
+	"files.associations": {
+		"apr_date.h": "c",
+		"mod_ssl_openssl.h": "c",
+		"mod_ssl.h": "c",
+		"map": "cpp",
+		"unordered_map": "cpp"
+	}
+}

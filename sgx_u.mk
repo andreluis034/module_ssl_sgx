@@ -1,41 +1,7 @@
-#
-# Copyright (C) 2011-2017 Intel Corporation. All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
-#
-#   * Redistributions of source code must retain the above copyright
-#     notice, this list of conditions and the following disclaimer.
-#   * Redistributions in binary form must reproduce the above copyright
-#     notice, this list of conditions and the following disclaimer in
-#     the documentation and/or other materials provided with the
-#     distribution.
-#   * Neither the name of Intel Corporation nor the names of its
-#     contributors may be used to endorse or promote products derived
-#     from this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#
-#
-
-
-
-######## SGX SDK Settings ########
-SGX_MODE ?= HW
-SGX_ARCH ?= x64
-UNTRUSTED_DIR=App
+######## Intel(R) SGX SDK Settings ########
+UNTRUSTED_DIR=untrusted
 BIN_OUTPUT=mod_example.so
+
 ifeq ($(shell getconf LONG_BIT), 32)
 	SGX_ARCH := x86
 else ifeq ($(findstring -m32, $(CXXFLAGS)), -m32)
@@ -43,93 +9,134 @@ else ifeq ($(findstring -m32, $(CXXFLAGS)), -m32)
 endif
 
 ifeq ($(SGX_ARCH), x86)
-	$(error x86 build is not supported, only x64!!)
+	SGX_COMMON_CFLAGS := -m32
+	SGX_LIBRARY_PATH := $(SGX_SDK)/lib
+	SGX_ENCLAVE_SIGNER := $(SGX_SDK)/bin/x86/sgx_sign
+	SGX_EDGER8R := $(SGX_SDK)/bin/x86/sgx_edger8r
 else
-	SGX_COMMON_CFLAGS := -m64 -Wall
-	ifeq ($(LINUX_SGX_BUILD), 1)
-		include ../../../../../buildenv.mk
-		SGX_LIBRARY_PATH := $(BUILD_DIR)
-		SGX_EDGER8R := $(BUILD_DIR)/sgx_edger8r
-		SGX_SDK_INC := $(COMMON_DIR)/inc
-		SGX_SHARED_LIB_FLAG := -Wl,-rpath,${SGX_LIBRARY_PATH}
-	else
-		SGX_LIBRARY_PATH := $(SGX_SDK)/lib64
-		SGX_EDGER8R := $(SGX_SDK)/bin/x64/sgx_edger8r
-		SGX_SDK_INC := $(SGX_SDK)/include
-	endif
+	SGX_COMMON_CFLAGS := -m64
+	SGX_LIBRARY_PATH := $(SGX_SDK)/lib64
+	SGX_ENCLAVE_SIGNER := $(SGX_SDK)/bin/x64/sgx_sign
+	SGX_EDGER8R := $(SGX_SDK)/bin/x64/sgx_edger8r
 endif
 
-ifeq ($(DEBUG), 1)
+ifeq ($(SGX_DEBUG), 1)
 ifeq ($(SGX_PRERELEASE), 1)
-$(error Cannot set DEBUG and SGX_PRERELEASE at the same time!!)
+$(error Cannot set SGX_DEBUG and SGX_PRERELEASE at the same time!!)
 endif
 endif
 
-OPENSSL_LIBRARY_PATH := $(PACKAGE_LIB)
-ifeq ($(DEBUG), 1)
-        SGX_COMMON_CFLAGS += -O0 -g
-		SgxSSL_Link_Libraries := sgx_usgxssld
+ifeq ($(SGX_DEBUG), 1)
+        SGX_COMMON_CFLAGS += -O0 -g -DSGX_DEBUG
 else
-        SGX_COMMON_CFLAGS += -O2 -D_FORTIFY_SOURCE=2
-		SgxSSL_Link_Libraries := sgx_usgxssl
+        SGX_COMMON_CFLAGS += -O2
 endif
-
 
 ######## App Settings ########
 
-
-App_Cpp_Files := $(UNTRUSTED_DIR)/App.cpp
-App_Cpp_Objects := $(App_Cpp_Files:.cpp=.o)
-
-App_Include_Paths := -I$(UNTRUSTED_DIR) -I$(SGX_SDK_INC) -I/opt/httpd/include  -I/usr/include/apr-1.0   -I/usr/include/apr-1.0 -I/usr/include
-
-App_C_Flags := -fPIC -Wno-attributes -DLINUX -D_REENTRANT -D_GNU_SOURCE -pthread $(App_Include_Paths)
-
-App_Cpp_Flags := $(App_C_Flags) -std=c++11
-
 ifneq ($(SGX_MODE), HW)
 	Urts_Library_Name := sgx_urts_sim
-	UaeService_Library_Name := sgx_uae_service_sim
 else
 	Urts_Library_Name := sgx_urts
-	UaeService_Library_Name := sgx_uae_service
+endif
+
+Wolfssl_C_Extra_Flags := -DWOLFSSL_SGX
+Wolfssl_Include_Paths := -I$(WOLFSSL_ROOT)/ \
+						 -I$(WOLFSSL_ROOT)/wolfcrypt/
+
+ifeq ($(HAVE_WOLFSSL_TEST), 1)
+	Wolfssl_Include_Paths += -I$(WOLFSSL_ROOT)/wolfcrypt/test/
+	Wolfssl_C_Extra_Flags += -DHAVE_WOLFSSL_TEST
+endif
+
+ifeq ($(HAVE_WOLFSSL_BENCHMARK), 1)
+	Wolfssl_Include_Paths += -I$(WOLFSSL_ROOT)/wolfcrypt/benchmark/
+	Wolfssl_C_Extra_Flags += -DHAVE_WOLFSSL_BENCHMARK
+endif
+
+Apache_Include_Paths := -I/opt/httpd/include  -I/usr/include/apr-1.0   -I/usr/include/apr-1.0 # -I/usr/include
+
+App_C_Files := $(UNTRUSTED_DIR)/App.c #$(UNTRUSTED_DIR)/client-tls.c $(UNTRUSTED_DIR)/server-tls.c
+App_Include_Paths := -IInclude $(Wolfssl_Include_Paths) -I$(UNTRUSTED_DIR) -I$(SGX_SDK)/include  $(Apache_Include_Paths)
+
+App_C_Flags := $(SGX_COMMON_CFLAGS) -fPIC -Wno-attributes $(App_Include_Paths) $(Wolfssl_C_Extra_Flags)
+
+# Three configuration modes - Debug, prerelease, release
+#   Debug - Macro DEBUG enabled.
+#   Prerelease - Macro NDEBUG and EDEBUG enabled.
+#   Release - Macro NDEBUG enabled.
+ifeq ($(SGX_DEBUG), 1)
+        App_C_Flags += -DDEBUG -UNDEBUG -UEDEBUG
+else ifeq ($(SGX_PRERELEASE), 1)
+        App_C_Flags += -DNDEBUG -DEDEBUG -UDEBUG
+else
+        App_C_Flags += -DNDEBUG -UEDEBUG -UDEBUG
+endif
+
+App_Link_Flags := $(SGX_COMMON_CFLAGS) -L$(SGX_LIBRARY_PATH) -l$(Urts_Library_Name) -lpthread
+
+ifneq ($(SGX_MODE), HW)
+	App_Link_Flags += -lsgx_uae_service_sim
+else
+	App_Link_Flags += -lsgx_uae_service
+endif
+
+App_C_Objects := $(App_C_Files:.c=.o)
+
+
+
+ifeq ($(SGX_MODE), HW)
+ifneq ($(SGX_DEBUG), 1)
+ifneq ($(SGX_PRERELEASE), 1)
+Build_Mode = HW_RELEASE
+endif
+endif
 endif
 
 
-Security_Link_Flags := -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now -pie
+.PHONY: all run
 
-App_Link_Flags := $(SGX_COMMON_CFLAGS) $(SGX_SHARED_LIB_FLAG) -L$(SGX_LIBRARY_PATH) -l$(Urts_Library_Name) -l$(UaeService_Library_Name) -L$(OPENSSL_LIBRARY_PATH) -l$(SgxSSL_Link_Libraries) -lpthread 
-
-
-.PHONY: all test
-
+ifeq ($(Build_Mode), HW_RELEASE)
 all: $(BIN_OUTPUT)
+	@echo "Build $(BIN_OUTPUT) [$(Build_Mode)|$(SGX_ARCH)] success!"
+	@echo
+	@echo "*********************************************************************************************************************************************************"
+	@echo "PLEASE NOTE: In this mode, please sign the Enclave.so first using Two Step Sign mechanism before you run the app to launch and access the enclave."
+	@echo "*********************************************************************************************************************************************************"
+	@echo
 
-test: all
-	@$(CURDIR)/App
-	@echo "RUN  =>  App [$(SGX_MODE)|$(SGX_ARCH), OK]"
+else
+all: $(BIN_OUTPUT)
+endif
+
+run: all
+ifneq ($(Build_Mode), HW_RELEASE)
+	@$(CURDIR)/$(BIN_OUTPUT)
+	@echo "RUN  =>  $(BIN_OUTPUT) [$(SGX_MODE)|$(SGX_ARCH), OK]"
+endif
 
 ######## App Objects ########
 
-$(UNTRUSTED_DIR)/Enclave_u.c: $(SGX_EDGER8R) Enclave/Enclave.edl
-	@cd $(UNTRUSTED_DIR) && $(SGX_EDGER8R) --untrusted ../Enclave/Enclave.edl --search-path $(PACKAGE_INC) --search-path $(SGX_SDK_INC)
+$(UNTRUSTED_DIR)/Enclave_u.c: $(SGX_EDGER8R) trusted/Enclave.edl
+	@cd $(UNTRUSTED_DIR) && $(SGX_EDGER8R) --untrusted ../trusted/Enclave.edl --search-path ../trusted --search-path $(SGX_SDK)/include
 	@echo "GEN  =>  $@"
 
 $(UNTRUSTED_DIR)/Enclave_u.o: $(UNTRUSTED_DIR)/Enclave_u.c
-	$(VCC) $(SGX_COMMON_CFLAGS) $(App_C_Flags) -c $< -o $@
+	@echo $(CC) $(App_C_Flags) -c $< -o $@
+	@$(CC) $(App_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
 
-$(UNTRUSTED_DIR)/%.o: $(UNTRUSTED_DIR)/%.cpp
-	$(VCXX) $(SGX_COMMON_CXXFLAGS) $(App_Cpp_Flags) -c $< -o $@
-	@echo "CXX  <=  $<"
+$(UNTRUSTED_DIR)/%.o: $(UNTRUSTED_DIR)/%.c
+	@echo $(CC) $(App_C_Flags) -c $< -o $@
+	@$(CC) $(App_C_Flags) -c $< -o $@
+	@echo "CC  <=  $<"
 
-$(BIN_OUTPUT): $(UNTRUSTED_DIR)/Enclave_u.o $(App_Cpp_Objects)
-	@$(CXX) -shared $^ -o $@ $(App_Link_Flags)
+$(BIN_OUTPUT): $(UNTRUSTED_DIR)/Enclave_u.o $(App_C_Objects)
+	@$(CC) -shared $^ -o $@ $(App_Link_Flags)
 	@echo "LINK =>  $@"
 
 
 .PHONY: clean
 
 clean:
-	@rm -f app mod_example.so $(App_Cpp_Objects) $(UNTRUSTED_DIR)/Enclave_u.* 
-	
+	@rm -f $(BIN_OUTPUT) $(App_C_Objects) $(UNTRUSTED_DIR)/Enclave_u.* 

@@ -30,31 +30,39 @@
  */
 
 
-#include <stdio.h>
-#include <openssl/bn.h>
-#include <openssl/crypto.h>
-#include <openssl/buffer.h>
-#include <openssl/err.h>
+#include <stdio.h>      /* vsnprintf */
+#include <stdarg.h>
 
-extern void printf(const char *fmt, ...);
-static int print_fp(const char *str, size_t len, void *fp)
+#include "Enclave.h"
+#include "Enclave_t.h"  /* print_string */
+
+
+
+/* 
+ * printf: 
+ *   Invokes OCALL to display the enclave buffer to the terminal.
+ */
+void printf(const char *fmt, ...)
 {
-    printf("%s", str);
-    return 1;
+    char buf[BUFSIZ] = {'\0'};
+    va_list ap;
+    va_start(ap, fmt);
+    vsnprintf(buf, BUFSIZ, fmt, ap);
+    va_end(ap);
+    ocall_print_string(buf);
 }
 
-void ERR_print_errors_fp(FILE *fp)
-{
-    ERR_print_errors_cb(print_fp, fp);
-}
 
-int BN_print_fp(FILE *fp, const BIGNUM *a)
+void t_sgxssl_call_apis()
 {
-    char* str = BN_bn2hex(a);
-    if (str == NULL)
-		return 0;
-	printf("%s", str);
-	OPENSSL_free(str);
-    return 1;
+    int ret = 0;
+    
+    printf("Start tests\n");
+    
+  
+
+
+	printf("test threads_test completed\n");
+	
 }
 
