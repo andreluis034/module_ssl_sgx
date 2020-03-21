@@ -1,40 +1,10 @@
-/*
- * Copyright (C) 2011-2019 Intel Corporation. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- *   * Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *   * Redistributions in binary form must reproduce the above copyright
- *     notice, this list of conditions and the following disclaimer in
- *     the documentation and/or other materials provided with the
- *     distribution.
- *   * Neither the name of Intel Corporation nor the names of its
- *     contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- */
-
 #include <httpd.h>
 #include <http_config.h>
 #include <http_core.h>
 #include <http_log.h>
 #include <http_protocol.h>
-
+#include <http_connection.h>
+//#include "ssl_private.h"
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
@@ -44,21 +14,27 @@
 # define MAX_PATH FILENAME_MAX
 
 #include "sgx_urts.h"
-#include "App.h"
+#include "mod_ssl.h"
 #include "Enclave_u.h"
+#include "ssl_private.h"
+#define SSL_CMD_ALL(name, args, desc) \
+        AP_INIT_##args("SSL"#name, ssl_cmd_SSL##name, \
+                       NULL, RSRC_CONF|OR_AUTHCFG, desc),
 
-static void register_hooks(apr_pool_t *pool);
+#define SSL_CMD_SRV(name, args, desc) \
+        AP_INIT_##args("SSL"#name, ssl_cmd_SSL##name, \
+                       NULL, RSRC_CONF, desc),
 
-module AP_MODULE_DECLARE_DATA   example_module =
-{
-    STANDARD20_MODULE_STUFF,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    register_hooks,  /* Our hook registering function */
-};
+#define SSL_CMD_PXY(name, args, desc) \
+        AP_INIT_##args("SSL"#name, ssl_cmd_SSL##name, \
+                       NULL, RSRC_CONF|PROXY_CONF, desc),
+
+#define SSL_CMD_DIR(name, type, args, desc) \
+        AP_INIT_##args("SSL"#name, ssl_cmd_SSL##name, \
+                       NULL, OR_##type, desc),
+
+#define AP_END_CMD { NULL }
+
 
 
 /* Global EID shared by multiple threads */
@@ -231,9 +207,95 @@ static int hello_handler(request_rec* r)
     return OK;
 }
 
-static void register_hooks(apr_pool_t *pool)
+static SSLConnRec *ssl_init_connection_ctx(conn_rec *c,
+                                           ap_conf_vector_t *per_dir_config,
+                                           int new_proxy)
+{
+    SSLConnRec *sslconn = myConnConfig(c);
+    int need_setup = 0;
+
+    if (!sslconn) {
+        sslconn = apr_pcalloc(c->pool, sizeof(*sslconn));
+        need_setup = 1;
+    }
+    else if (!new_proxy) {
+        return sslconn;
+    }
+
+    /* Reinit dc in any case because it may be r->per_dir_config scoped
+     * and thus a caller like mod_proxy needs to update it per request.
+     */
+    if (per_dir_config) {
+        sslconn->dc = ap_get_module_config(per_dir_config, &ssl_module);
+    }
+    else {
+        sslconn->dc = ap_get_module_config(c->base_server->lookup_defaults,
+                                           &ssl_module);
+    }
+
+
+    if (need_setup) {
+        sslconn->server = c->base_server;
+        sslconn->verify_depth = UNSET;
+        if (new_proxy) {
+            sslconn->is_proxy = 1;
+            sslconn->cipher_suite = sslconn->dc->proxy->auth.cipher_suite;
+        }
+        else {
+            SSLSrvConfigRec *sc = mySrvConfig(c->base_server);
+            sslconn->cipher_suite = sc->server->auth.cipher_suite;
+        }
+
+        myConnConfigSet(c, sslconn);
+    }
+
+    return sslconn;
+}                                      
+
+int ssl_init_ssl_connection(conn_rec *c, request_rec *r)
+{
+    SSLSrvConfigRec *sc;
+    unsigned long long wolfSSLIdentifier;
+    SSLConnRec *sslconn;
+    char *vhost_md5;
+    int rc;
+    modssl_ctx_t *mctx;
+    server_rec *server;
+    /*
+     * Create or retrieve SSL context
+     */
+    sslconn = ssl_init_connection_ctx(c, r ? r->per_dir_config : NULL, 0);
+    server = sslconn->server;
+	sc = mySrvConfig(server);
+  //  sc = mySrvConfig(server);
+
+  return 0;
+
+}
+static int ssl_hook_pre_connection(conn_rec *c, void *csd)
+{
+    return ssl_init_ssl_connection(c, NULL);
+}
+
+static void ssl_register_hooks(apr_pool_t *pool)
 {
 	InitEnclave();
+
+
+    ap_hook_pre_connection(ssl_hook_pre_connection,NULL,NULL, APR_HOOK_MIDDLE);
+
+
     /* Create a hook in the request handler, so we get called when a request arrives */
     ap_hook_handler(hello_handler, NULL, NULL, APR_HOOK_LAST);
 }
+
+module AP_MODULE_DECLARE_DATA   ssl_module =
+{
+    STANDARD20_MODULE_STUFF,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    ssl_register_hooks,  /* Our hook registering function */
+};
