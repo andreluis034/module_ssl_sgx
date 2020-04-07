@@ -214,6 +214,13 @@ static SSLConnRec *ssl_init_connection_ctx(conn_rec *c,
     SSLConnRec *sslconn = myConnConfig(c);
     int need_setup = 0;
 
+    /* mod_proxy's (r->)per_dir_config has the lifetime of the request, thus
+     * it uses ssl_engine_set() to reset sslconn->dc when reusing SSL backend
+     * connections, so we must fall through here. But in the case where we are
+     * called from ssl_init_ssl_connection() with no per_dir_config (which also
+     * includes mod_proxy's later run_pre_connection call), sslconn->dc should
+     * be preserved if it's already set.
+     */
     if (!sslconn) {
         sslconn = apr_pcalloc(c->pool, sizeof(*sslconn));
         need_setup = 1;
@@ -233,7 +240,6 @@ static SSLConnRec *ssl_init_connection_ctx(conn_rec *c,
                                            &ssl_module);
     }
 
-
     if (need_setup) {
         sslconn->server = c->base_server;
         sslconn->verify_depth = UNSET;
@@ -250,26 +256,78 @@ static SSLConnRec *ssl_init_connection_ctx(conn_rec *c,
     }
 
     return sslconn;
-}                                      
+}
+                                 
 
 int ssl_init_ssl_connection(conn_rec *c, request_rec *r)
 {
     SSLSrvConfigRec *sc;
-    unsigned long long wolfSSLIdentifier;
+    SSL *ssl;
     SSLConnRec *sslconn;
     char *vhost_md5;
     int rc;
     modssl_ctx_t *mctx;
     server_rec *server;
+
     /*
      * Create or retrieve SSL context
      */
     sslconn = ssl_init_connection_ctx(c, r ? r->per_dir_config : NULL, 0);
     server = sslconn->server;
-	sc = mySrvConfig(server);
-  //  sc = mySrvConfig(server);
+    sc = mySrvConfig(server);
 
-  return 0;
+    /*
+     * Seed the Pseudo Random Number Generator (PRNG)
+     */
+    ssl_rand_seed(server, c->pool, SSL_RSCTX_CONNECT,
+                  sslconn->is_proxy ? "Proxy: " : "Server: ");
+
+    mctx = myCtxConfig(sslconn, sc);
+
+    /*
+     * Create a new SSL connection with the configured server SSL context and
+     * attach this to the socket. Additionally we register this attachment
+     * so we can detach later.
+     */
+    if (!(sslconn->ssl = ssl = SSL_new(mctx->ssl_ctx))) {
+        ap_log_cerror(APLOG_MARK, APLOG_ERR, 0, c, APLOGNO(01962)
+                      "Unable to create a new SSL connection from the SSL "
+                      "context");
+        ssl_log_ssl_error(SSLLOG_MARK, APLOG_ERR, server);
+
+        c->aborted = 1;
+
+        return DECLINED; /* XXX */
+    }
+
+    rc = ssl_run_pre_handshake(c, ssl, sslconn->is_proxy ? 1 : 0);
+    if (rc != OK && rc != DECLINED) {
+        return rc;
+    }
+
+    vhost_md5 = ap_md5_binary(c->pool, (unsigned char *)sc->vhost_id,
+                              sc->vhost_id_len);
+
+    if (!SSL_set_session_id_context(ssl, (unsigned char *)vhost_md5,
+                                    APR_MD5_DIGESTSIZE*2))
+    {
+        ap_log_cerror(APLOG_MARK, APLOG_ERR, 0, c, APLOGNO(01963)
+                      "Unable to set session id context to '%s'", vhost_md5);
+        ssl_log_ssl_error(SSLLOG_MARK, APLOG_ERR, server);
+
+        c->aborted = 1;
+
+        return DECLINED; /* XXX */
+    }
+
+    SSL_set_app_data(ssl, c);
+    modssl_set_app_data2(ssl, NULL); /* will be request_rec */
+
+    SSL_set_verify_result(ssl, X509_V_OK);
+
+    ssl_io_filter_init(c, r, ssl);
+
+    return APR_SUCCESS;
 
 }
 static int ssl_hook_pre_connection(conn_rec *c, void *csd)
