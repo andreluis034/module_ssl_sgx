@@ -66,3 +66,25 @@ void t_sgxssl_call_apis()
 	
 }
 
+size_t recv(int sockfd, void *buf, size_t len, int flags)
+{
+	printf("recv called!\n");
+	return 0;
+
+    size_t ret;
+    int sgxStatus;
+    sgxStatus = ocall_recv(&ret, sockfd, buf, len, flags);
+    return ret;
+}
+
+size_t send(int sockfd, const void *buf, size_t len, int flags)
+{
+	printf("send called!\n");
+
+	return 0;
+    size_t ret;
+    int sgxStatus;
+    sgxStatus = ocall_send(&ret, sockfd, buf, len, flags);
+    return ret;
+}
+

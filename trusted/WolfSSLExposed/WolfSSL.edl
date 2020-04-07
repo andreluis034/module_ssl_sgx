@@ -1,0 +1,12 @@
+enclave {
+//	include "wolfssl/ssl.h"
+//    include "wolfssl/wolfcrypt/settings.h"
+//    include "wolfssl/wolfcrypt/types.h"
+
+	include "user_types.h"
+	
+	trusted {
+
+		public WOLFSSL_SSL_IDENTIFIER sgx_SSL_new(WOLFSSL_SSL_CTX_IDENTIFIER id);
+	};
+};

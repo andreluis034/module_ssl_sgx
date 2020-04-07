@@ -45,7 +45,7 @@ Wolfssl_Include_Paths := -I$(WOLFSSL_ROOT)/ \
 						 -I$(WOLFSSL_ROOT)/wolfcrypt/
 
 
-Enclave_C_Files := trusted/Enclave.c
+Enclave_C_Files := trusted/Enclave.c trusted/WolfSSLExposed/ssl.c trusted/GenericMap/generic_map.c
 Enclave_Include_Paths := -IInclude -Itrusted $(Wolfssl_Include_Paths)\
    								   -I$(SGX_SDK)/include -I$(SGX_SDK)/include/tlibc\
 								   -I$(SGX_SDK)/include/stlport
