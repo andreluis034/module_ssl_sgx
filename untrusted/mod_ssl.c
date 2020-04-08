@@ -16,7 +16,23 @@
 #include "sgx_urts.h"
 #include "mod_ssl.h"
 #include "Enclave_u.h"
+
+
 #include "ssl_private.h"
+#include "mod_ssl.h"
+#include "mod_ssl_openssl.h"
+#include "util_md5.h"
+#include "util_mutex.h"
+#include "ap_provider.h"
+#include "http_config.h"
+
+#include "mod_proxy.h" /* for proxy_hook_section_post_config() */
+
+
+APR_IMPLEMENT_OPTIONAL_HOOK_RUN_ALL(ssl, SSL, int, pre_handshake,
+                                    (conn_rec *c,SSL *ssl,int is_proxy),
+                                    (c,ssl,is_proxy), OK, DECLINED);
+
 #define SSL_CMD_ALL(name, args, desc) \
         AP_INIT_##args("SSL"#name, ssl_cmd_SSL##name, \
                        NULL, RSRC_CONF|OR_AUTHCFG, desc),
@@ -177,7 +193,7 @@ void InitEnclave()
     if(initialize_enclave() < 0){
         return; 
     }
-	t_sgxssl_call_apis(global_eid);
+	initSgxLib(global_eid);
 
     /* Destroy the enclave */
     sgx_destroy_enclave(global_eid);
@@ -262,7 +278,7 @@ static SSLConnRec *ssl_init_connection_ctx(conn_rec *c,
 int ssl_init_ssl_connection(conn_rec *c, request_rec *r)
 {
     SSLSrvConfigRec *sc;
-    SSL *ssl;
+    SSL ssl;
     SSLConnRec *sslconn;
     char *vhost_md5;
     int rc;
@@ -289,7 +305,8 @@ int ssl_init_ssl_connection(conn_rec *c, request_rec *r)
      * attach this to the socket. Additionally we register this attachment
      * so we can detach later.
      */
-    if (!(sslconn->ssl = ssl = SSL_new(mctx->ssl_ctx))) {
+	sgx_status_t  sgxResult = sgx_SSL_new(global_eid, &ssl, mctx->ssl_ctx);
+    if (sgxResult != SGX_SUCCESS || !(sslconn->ssl = ssl)) {
         ap_log_cerror(APLOG_MARK, APLOG_ERR, 0, c, APLOGNO(01962)
                       "Unable to create a new SSL connection from the SSL "
                       "context");
@@ -300,7 +317,8 @@ int ssl_init_ssl_connection(conn_rec *c, request_rec *r)
         return DECLINED; /* XXX */
     }
 
-    rc = ssl_run_pre_handshake(c, ssl, sslconn->is_proxy ? 1 : 0);
+	//TODO Check this cast?
+    rc = ssl_run_pre_handshake(c, (SSL*) ssl, sslconn->is_proxy ? 1 : 0);
     if (rc != OK && rc != DECLINED) {
         return rc;
     }
@@ -308,8 +326,9 @@ int ssl_init_ssl_connection(conn_rec *c, request_rec *r)
     vhost_md5 = ap_md5_binary(c->pool, (unsigned char *)sc->vhost_id,
                               sc->vhost_id_len);
 
-    if (!SSL_set_session_id_context(ssl, (unsigned char *)vhost_md5,
-                                    APR_MD5_DIGESTSIZE*2))
+	int retResult;
+	sgxResult = sgx_SSL_set_session_id_context(global_eid, &retResult, ssl, (unsigned char *)vhost_md5, APR_MD5_DIGESTSIZE*2);
+    if (!sgxResult)
     {
         ap_log_cerror(APLOG_MARK, APLOG_ERR, 0, c, APLOGNO(01963)
                       "Unable to set session id context to '%s'", vhost_md5);
@@ -319,11 +338,11 @@ int ssl_init_ssl_connection(conn_rec *c, request_rec *r)
 
         return DECLINED; /* XXX */
     }
-
-    SSL_set_app_data(ssl, c);
+	sgx_SSL_set_app_data(global_eid, ssl, c);
+    //SSL_set_app_data(ssl, c);
     modssl_set_app_data2(ssl, NULL); /* will be request_rec */
 
-    SSL_set_verify_result(ssl, X509_V_OK);
+    sgx_SSL_set_verify_result(global_eid, ssl, _X509_V_OK);
 
     ssl_io_filter_init(c, r, ssl);
 

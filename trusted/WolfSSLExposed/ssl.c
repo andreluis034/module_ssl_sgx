@@ -28,19 +28,53 @@ WOLFSSL_SSL_IDENTIFIER sgx_SSL_new(WOLFSSL_SSL_CTX_IDENTIFIER id)
 	}
 	
 	WOLFSSL* ssl = wolfSSL_new(ctx);
-	if (ssl != NULL)
+	if (ssl == NULL)
 	{
 		return 0;
 	}
 	
-	WOLFSSL_SSL_IDENTIFIER sslId;
+	WOLFSSL_SSL_IDENTIFIER sslId = 0;
 	RandomUntilNonExistant(sslId, WolfSSLMap);
 	WolfSSLMapTypeAdd(&WolfSSLMap, sslId, ssl);
 
 	return sslId;
 }
 
+
+int sgx_SSL_set_session_id_context(WOLFSSL_SSL_IDENTIFIER sslId, unsigned char*buffer, size_t len)
+{
+	WOLFSSL* ssl =  WolfSSLMapTypeGet(&WolfSSLMap, sslId);
+	if (ssl == NULL)
+	{
+		return 0;
+	}
+	
+	return wolfSSL_set_session_id_context(ssl, buffer, len);
+}
+
+void sgx_SSL_set_app_data(WOLFSSL_SSL_IDENTIFIER sslId, void* arg)
+{
+	WOLFSSL* ssl =  WolfSSLMapTypeGet(&WolfSSLMap, sslId);
+	if (ssl == NULL)
+	{
+		return;
+	}
+	wolfSSL_set_app_data(ssl, arg);
+}
+
+void sgx_SSL_set_verify_result(WOLFSSL_SSL_IDENTIFIER sslId, long verify_result)
+{
+	WOLFSSL* ssl =  WolfSSLMapTypeGet(&WolfSSLMap, sslId);
+	if (ssl == NULL)
+	{
+		return;
+	}
+	wolfSSL_set_verify_result(ssl, verify_result);
+}
+
+
 void initMaps()
 {
 	WolfSSLCtxMapTypeInit(&WolfSSLCtxMap);
+	WolfSSLMapTypeInit(&WolfSSLMap);
 }

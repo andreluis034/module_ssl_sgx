@@ -30,17 +30,19 @@ typedef WOLFSSL_OCSP_RESPONSE_IDENTIFIER OCSP_RESPONSE;
 typedef WOLFSSL_OCSP_REQUEST_IDENTIFIER OCSP_REQUEST;
 
 
+#define _X509_V_OK 0
+
 typedef int (*stack_cmp_func)(const void **a, const void **b);
 typedef struct stack_st {
   /* num contains the number of valid pointers in |data|. */
-  __size_t num;
+  unsigned int num;
   void **data;
   /* sorted is non-zero if the values pointed to by |data| are in ascending
    * order, based on |comp|. */
-  __size_t sorted;
+  unsigned int sorted;
   /* num_alloc contains the number of pointers allocated in the buffer pointed
    * to by |data|, which may be larger than |num|. */
-  __size_t num_alloc;
+  unsigned int num_alloc;
   /* comp is an optional comparision function. */
   stack_cmp_func comp;
 } _STACK;

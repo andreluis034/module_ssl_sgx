@@ -8,5 +8,8 @@ enclave {
 	trusted {
 
 		public WOLFSSL_SSL_IDENTIFIER sgx_SSL_new(WOLFSSL_SSL_CTX_IDENTIFIER id);
+		public int sgx_SSL_set_session_id_context(WOLFSSL_SSL_IDENTIFIER ssl, [in, size=len] unsigned char*buffer, size_t len);
+		public void sgx_SSL_set_app_data(WOLFSSL_SSL_IDENTIFIER ssl, [user_check]void* arg);
+		public void sgx_SSL_set_verify_result(WOLFSSL_SSL_IDENTIFIER sslId, long verify_result);
 	};
 };

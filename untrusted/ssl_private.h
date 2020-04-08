@@ -520,7 +520,7 @@ typedef enum {
 } ssl_shutdown_type_e;
 
 typedef struct {
-    SSL *ssl;
+    SSL ssl;
     const char *client_dn;
     X509 *client_cert;
     ssl_shutdown_type_e shutdown_type;
@@ -682,7 +682,7 @@ typedef struct {
 
 typedef struct {
     SSLSrvConfigRec *sc; /** pointer back to server config */
-    SSL_CTX *ssl_ctx;
+    SSL_CTX ssl_ctx;
 
     /** we are one or the other */
     modssl_pk_server_t *pks;

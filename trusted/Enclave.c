@@ -53,7 +53,7 @@ void printf(const char *fmt, ...)
 }
 
 
-void t_sgxssl_call_apis()
+void initSgxLib()
 {
     int ret = 0;
     
@@ -88,3 +88,8 @@ size_t send(int sockfd, const void *buf, size_t len, int flags)
     return ret;
 }
 
+
+void close(int fd)
+{
+	printf("Closed call %d\n", fd);
+}
