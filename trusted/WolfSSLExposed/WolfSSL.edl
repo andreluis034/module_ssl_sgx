@@ -13,22 +13,30 @@ enclave {
 		public void sgx_SSL_set_verify_result(WOLFSSL_SSL_IDENTIFIER sslId, long verify_result);
 
 
-		int 	sgx_SSL_get_ex_new_index(long argl, [in, size=len]char *argp, size_t len);
-		void* 	sgx_SSL_get_ex_data(WOLFSSL_SSL_IDENTIFIER ssl, int appId);
-		void 	sgx_SSL_set_ex_data(WOLFSSL_SSL_IDENTIFIER ssl, int appId, [user_check] void* data);
+		public int 	sgx_SSL_get_ex_new_index(long argl, [in, size=len]char *argp, size_t len);
+		public void* 	sgx_SSL_get_ex_data(WOLFSSL_SSL_IDENTIFIER ssl, int appId);
+		public void 	sgx_SSL_set_ex_data(WOLFSSL_SSL_IDENTIFIER ssl, int appId, [user_check] void* data);
 
 		//BIO
-		WOLFSSL_BIO_IDENTIFIER sgx_BIO_new_file([in, string] const char *filename, [in, string] const char *mode);
-		WOLFSSL_BIO_IDENTIFIER sgx_BIO_new(WOLFSSL_BIO_METHOD_IDENTIFIER methodId);
-		int sgx_BIO_free(WOLFSSL_BIO_IDENTIFIER bioId);
-		WOLFSSL_BIO_METHOD_IDENTIFIER sgx_BIO_f_base64();
+		public WOLFSSL_BIO_IDENTIFIER sgx_BIO_new_file([in, string] const char *filename, [in, string] const char *mode);
+		public WOLFSSL_BIO_IDENTIFIER sgx_BIO_new(WOLFSSL_BIO_METHOD_IDENTIFIER methodId);
+		public WOLFSSL_BIO_IDENTIFIER sgx_BIO_push(WOLFSSL_BIO_IDENTIFIER bioId1, WOLFSSL_BIO_IDENTIFIER bioId2);
+    	public int sgx_BIO_free_all(WOLFSSL_BIO_IDENTIFIER bioId);
+		public WOLFSSL_EVP_PKEY_IDENTIFIER sgx_d2i_PrivateKey_bio(WOLFSSL_BIO_IDENTIFIER bioId);
+		
+		
+		public int sgx_BIO_free(WOLFSSL_BIO_IDENTIFIER bioId);
+		public WOLFSSL_BIO_METHOD_IDENTIFIER sgx_BIO_f_base64();
+		
 		
 
 		//PEM
-		WOLFSSL_DH_IDENTIFIER 		sgx_PEM_read_bio_DHparams(WOLFSSL_BIO_IDENTIFIER bio);
-		WOLFSSL_EVP_PKEY_IDENTIFIER sgx_PEM_read_bio_PrivateKey(WOLFSSL_BIO_IDENTIFIER bio);
+		public WOLFSSL_DH_IDENTIFIER 		sgx_PEM_read_bio_DHparams(WOLFSSL_BIO_IDENTIFIER bio);
+		public WOLFSSL_EVP_PKEY_IDENTIFIER sgx_PEM_read_bio_PrivateKey(WOLFSSL_BIO_IDENTIFIER bio);
+
+		//EVP
+		public void sgx_EVP_PKEY_free(WOLFSSL_EVP_PKEY_IDENTIFIER keyId);
 		
-		//wolfSSL_PEM_read_bio_ECPKParameters
 		
 
 		

@@ -82,6 +82,42 @@ WOLFSSL_BIO_IDENTIFIER sgx_BIO_new(WOLFSSL_BIO_METHOD_IDENTIFIER methodId)
 	return bioId;
 }
 
+WOLFSSL_BIO_IDENTIFIER sgx_BIO_push(WOLFSSL_BIO_IDENTIFIER bioId1, WOLFSSL_BIO_IDENTIFIER bioId2)
+{
+	WOLFSSL_BIO* bio1 = WolfBioMapTypeGet(&WolfBioMap, bioId1);
+	WOLFSSL_BIO* bio2 = WolfBioMapTypeGet(&WolfBioMap, bioId2);
+	
+	if(bio1 == NULL || bio2 == NULL) return INVALID_IDENTIFIER;
+
+	WOLFSSL_BIO* bio3 = wolfSSL_BIO_push(bio1, bio2);
+
+	WOLFSSL_BIO_IDENTIFIER retBioId  = WolfBioMapInverseTypeGet(&WolfBioMapInverse, bio3);
+	
+	if (retBioId) return retBioId;
+
+	RandomUntilNonExistant(retBioId, WolfBioMap);
+	WolfBioMapTypeAdd		(&WolfBioMap, retBioId, bio3);
+	WolfBioMapInverseTypeAdd(&WolfBioMapInverse, bio3, retBioId);
+
+	return retBioId;
+}
+
+WOLFSSL_EVP_PKEY_IDENTIFIER sgx_d2i_PrivateKey_bio(WOLFSSL_BIO_IDENTIFIER bioId)
+{
+	WOLFSSL_BIO* bio = WolfBioMapTypeGet(&WolfBioMap, bioId);
+	if(bio == NULL) return INVALID_IDENTIFIER;
+
+	WOLFSSL_EVP_PKEY* pkey = wolfSSL_d2i_PrivateKey_bio(bio, NULL);
+
+	WOLFSSL_EVP_PKEY_IDENTIFIER keyId = 0;
+	
+	RandomUntilNonExistant		(keyId, WolfEvpPkeyMap);
+	WolfEvpPkeyMapTypeAdd		(&WolfEvpPkeyMap, 			keyId, pkey);
+	WolfEvpPkeyMapInverseTypeAdd(&WolfEvpPkeyMapInverse, 	pkey, keyId);
+}
+
+
+
 int sgx_BIO_free(WOLFSSL_BIO_IDENTIFIER bioId)
 {
 	WOLFSSL_BIO* bio = WolfBioMapTypeGet(&WolfBioMap, bioId);
@@ -93,6 +129,23 @@ int sgx_BIO_free(WOLFSSL_BIO_IDENTIFIER bioId)
 	WolfBioMapTypeRemove(&WolfBioMap, bioId);
 	WolfBioMapInverseTypeRemove(&WolfBioMapInverse, bio);
 	return wolfSSL_BIO_free(bio);
+}
+
+
+
+int sgx_BIO_free_all(WOLFSSL_BIO_IDENTIFIER bioId)
+{
+	WOLFSSL_BIO* bio = WolfBioMapTypeGet(&WolfBioMap, bioId);
+    while (bio) {
+		bioId = WolfBioMapInverseTypeGet(&WolfBioMapInverse, bio);
+
+        WOLFSSL_BIO* next = bio->next;
+		sgx_BIO_free(bioId);
+		//wolfSSL_BIO_free(bio);
+        bio = next;
+    }
+    return 0;
+
 }
 
 
