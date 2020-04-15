@@ -40,12 +40,18 @@ endif
 Crypto_Library_Name := sgx_tcrypto
 
 
-Wolfssl_C_Extra_Flags := -DWOLFSSL_SGX -DWOLFSSL_SGX -DOPENSSL_EXTRA -DSGX -DWOLFSSL_ENCRYPTED_KEYS -DHAVE_EX_DATA
+Wolfssl_C_Extra_Flags := -DWOLFSSL_SGX -DOPENSSL_EXTRA -DSGX -DWOLFSSL_ENCRYPTED_KEYS -DHAVE_EX_DATA -DWOLFSSL_ASIO
 Wolfssl_Include_Paths := -I$(WOLFSSL_ROOT)/ \
 						 -I$(WOLFSSL_ROOT)/wolfcrypt/
 
 
-Enclave_C_Files := trusted/Enclave.c trusted/WolfSSLExposed/ssl.c trusted/GenericMap/generic_map.c trusted/WolfSSLExposed/bio.c
+Enclave_C_Files := trusted/Enclave.c trusted/WolfSSLExposed/ssl.c \
+	trusted/GenericMap/generic_map.c \
+	trusted/WolfSSLExposed/bio.c \
+	trusted/WolfSSLExposed/maps.c \
+	trusted/WolfSSLExposed/pem.c \
+	trusted/WolfSSLExposed/evp.c
+
 Enclave_Include_Paths := -IInclude -Itrusted $(Wolfssl_Include_Paths)\
    								   -I$(SGX_SDK)/include -I$(SGX_SDK)/include/tlibc\
 								   -I$(SGX_SDK)/include/stlport
