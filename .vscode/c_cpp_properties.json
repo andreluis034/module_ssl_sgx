@@ -10,12 +10,12 @@
                 "/home/andre/git/wolfssl",
                 "/home/andre/git/wolfssl/wolfcrypt"
             ],
-            "defines": [],
+            "defines": ["WOLFSSL_SGX", "OPENSSL_EXTRA", "SGX", "WOLFSSL_ENCRYPTED_KEYS", "HAVE_EX_DATA"],
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "c11",
             "cppStandard": "c++17",
-            "intelliSenseMode": "clang-x64"
-        }
+			"intelliSenseMode": "clang-x64"  
+		}
     ],
     "version": 4
 }

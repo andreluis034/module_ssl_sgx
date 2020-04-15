@@ -11,6 +11,11 @@ enclave {
     untrusted {
         /* define OCALLs here. */
         void ocall_print_string([in, string] const char* str);
+		uint64_t ocall_fopen([in, string] const char* file, [in, string] const char* mode);
+		int ocall_fread([out]char* buffer, size_t element_size, size_t element_count, uint64_t filePtr);
+		void ocall_fclose(uint64_t filePtr);
+
+
 //		size_t ocall_recv(int sockfd, [out, size=len] void *buf, size_t len, int flags) propagate_errno;
 //      size_t ocall_send(int sockfd, [in, size=len] const void *buf, size_t len, int flags) propagate_errno;
     };

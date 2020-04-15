@@ -1,22 +1,10 @@
-#include "ssl.h"
+#include "maps.h"
 #include <sgx_trts.h>
-#define RandomUntilNonExistant(X,map) do{sgx_read_rand((unsigned char*)(&X), sizeof(X));}while(X != 0 && map##TypeGet(&map, X) == 0)
+#include "../util_defs.h"
 
-int32_t equalKeys(uint64_t key1, uint64_t key2)
-{
-	return key1 != key2;
-}
-uint32_t hashKey(uint64_t key)
-{
-	uint32_t* keyArr =  (uint32_t*)&key;
-	return keyArr[0] ^ keyArr[1];
-}
 
-define_map_c(WolfSSLCtxMapType, WOLFSSL_SSL_CTX_IDENTIFIER, WOLFSSL_CTX*, 	hashKey, equalKeys, NULL)
-define_map_c(WolfSSLMapType, 	WOLFSSL_SSL_IDENTIFIER, 	WOLFSSL*, 		hashKey, equalKeys, NULL)
 
-WolfSSLCtxMapType 	WolfSSLCtxMap;
-WolfSSLMapType 		WolfSSLMap;
+
 
 
 WOLFSSL_SSL_IDENTIFIER sgx_SSL_new(WOLFSSL_SSL_CTX_IDENTIFIER id)
@@ -35,7 +23,8 @@ WOLFSSL_SSL_IDENTIFIER sgx_SSL_new(WOLFSSL_SSL_CTX_IDENTIFIER id)
 	
 	WOLFSSL_SSL_IDENTIFIER sslId = 0;
 	RandomUntilNonExistant(sslId, WolfSSLMap);
-	WolfSSLMapTypeAdd(&WolfSSLMap, sslId, ssl);
+	WolfSSLMapTypeAdd		(&WolfSSLMap, 			sslId, ssl);
+	WolfSSLMapInverseTypeAdd(&WolfSSLMapInverse, 	ssl, sslId);
 
 	return sslId;
 }
@@ -73,8 +62,28 @@ void sgx_SSL_set_verify_result(WOLFSSL_SSL_IDENTIFIER sslId, long verify_result)
 }
 
 
-void initMaps()
+//TODO FIX this?
+int 	sgx_SSL_get_ex_new_index(long argl, char *argp, size_t dataSize)
 {
-	WolfSSLCtxMapTypeInit(&WolfSSLCtxMap);
-	WolfSSLMapTypeInit(&WolfSSLMap);
+	return wolfSSL_get_ex_new_index(argl, "Second Application Data for SSL", NULL, NULL, NULL);
+}
+
+void* 	sgx_SSL_get_ex_data(WOLFSSL_SSL_IDENTIFIER sslId, int appId)
+{
+	WOLFSSL* ssl =  WolfSSLMapTypeGet(&WolfSSLMap, sslId);
+	if (ssl == NULL)
+	{
+		return NULL;
+	}
+	return wolfSSL_get_ex_data(ssl, appId);
+}
+
+void sgx_SSL_set_ex_data(WOLFSSL_SSL_IDENTIFIER sslId, int appId, void* data)
+{
+	WOLFSSL* ssl =  WolfSSLMapTypeGet(&WolfSSLMap, sslId);
+	if (ssl == NULL)
+	{
+		return;
+	}
+	wolfSSL_set_ex_data(ssl, appId, data);
 }

@@ -36,7 +36,7 @@
 #include "Enclave.h"
 #include "Enclave_t.h"  /* print_string */
 
-
+#include "WolfSSLExposed/maps.h"
 
 /* 
  * printf: 
@@ -55,21 +55,15 @@ void printf(const char *fmt, ...)
 
 void initSgxLib()
 {
-    int ret = 0;
-    
-    printf("Start tests\n");
-    
-  
-
-
-	printf("test threads_test completed\n");
-	
+	InitMaps();
 }
 
 size_t recv(int sockfd, void *buf, size_t len, int flags)
 {
 	printf("recv called!\n");
-	return 0;
+	uint32_t* deadbeef = (uint32_t*) 0xDEADBEEF;
+	
+	return *deadbeef;
 
     size_t ret;
     int sgxStatus;
@@ -81,7 +75,9 @@ size_t send(int sockfd, const void *buf, size_t len, int flags)
 {
 	printf("send called!\n");
 
-	return 0;
+	uint32_t* deadbeef = (uint32_t*)0xDEADBEEF;
+	
+	return *deadbeef;
     size_t ret;
     int sgxStatus;
     sgxStatus = ocall_send(&ret, sockfd, buf, len, flags);
@@ -92,4 +88,7 @@ size_t send(int sockfd, const void *buf, size_t len, int flags)
 void close(int fd)
 {
 	printf("Closed call %d\n", fd);
+	uint32_t* deadbeef = (uint32_t*) 0xDEADBEEF;
+	
+	*deadbeef = 1;
 }
