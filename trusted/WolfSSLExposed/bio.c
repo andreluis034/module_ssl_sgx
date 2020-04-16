@@ -119,8 +119,6 @@ WOLFSSL_EVP_PKEY_IDENTIFIER sgx_d2i_PrivateKey_bio(WOLFSSL_BIO_IDENTIFIER bioId)
 	WolfEvpPkeyMapInverseTypeAdd(&WolfEvpPkeyMapInverse, 	pkey, keyId);
 }
 
-
-
 int sgx_BIO_free(WOLFSSL_BIO_IDENTIFIER bioId)
 {
 	WOLFSSL_BIO* bio = WolfBioMapTypeGet(&WolfBioMap, bioId);
@@ -133,8 +131,6 @@ int sgx_BIO_free(WOLFSSL_BIO_IDENTIFIER bioId)
 	WolfBioMapInverseTypeRemove(&WolfBioMapInverse, bio);
 	return wolfSSL_BIO_free(bio);
 }
-
-
 
 int sgx_BIO_free_all(WOLFSSL_BIO_IDENTIFIER bioId)
 {
@@ -151,16 +147,34 @@ int sgx_BIO_free_all(WOLFSSL_BIO_IDENTIFIER bioId)
 
 }
 
-
 WOLFSSL_BIO_METHOD_IDENTIFIER sgx_BIO_f_base64()
 {
 	return WOLFSSL_BIO_BASE64;
 }
 
+WOLFSSL_BIO_METHOD_IDENTIFIER sgx_BIO_s_mem()
+{
+	return WOLFSSL_BIO_MEMORY;
+}
 
 int sgx_BIO_flush(WOLFSSL_BIO_IDENTIFIER bioId)
 {
 	GET_BIO(bio, bioId, 0);
 
 	return wolfSSL_BIO_flush(bio);
+}
+
+int sgx_BIO_pending(WOLFSSL_BIO_IDENTIFIER bioId)
+{
+	GET_BIO(bio, bioId, 0);
+
+	return wolfSSL_BIO_pending(bio);
+}
+
+
+int sgx_BIO_read(WOLFSSL_BIO_IDENTIFIER bioId, void* buffer, size_t len)
+{
+	GET_BIO(bio, bioId, 0);
+
+	return wolfSSL_BIO_read(bio, buffer, len);
 }

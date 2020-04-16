@@ -68,7 +68,6 @@ WOLFSSL_BIO_IDENTIFIER sgx_SSL_get_wbio(WOLFSSL_SSL_IDENTIFIER sslId)
 
 
 
-
 int sgx_SSL_set_session_id_context(WOLFSSL_SSL_IDENTIFIER sslId, unsigned char*buffer, size_t len)
 {
 	WOLFSSL* ssl =  WolfSSLMapTypeGet(&WolfSSLMap, sslId);

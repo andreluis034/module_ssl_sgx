@@ -32,9 +32,12 @@ enclave {
 		
 		public int sgx_BIO_free(WOLFSSL_BIO_IDENTIFIER bioId);
 		public WOLFSSL_BIO_METHOD_IDENTIFIER sgx_BIO_f_base64();
+		public WOLFSSL_BIO_METHOD_IDENTIFIER sgx_BIO_s_mem();
 
 		public int sgx_BIO_flush(WOLFSSL_BIO_IDENTIFIER bioId);
-		
+		public int sgx_BIO_pending(WOLFSSL_BIO_IDENTIFIER bioId);
+
+		public int sgx_BIO_read(WOLFSSL_BIO_IDENTIFIER bioId, [out, size=len] void* buffer, size_t len);
 		
 
 		//PEM
@@ -43,13 +46,25 @@ enclave {
 
 		//EVP
 		public void sgx_EVP_PKEY_free(WOLFSSL_EVP_PKEY_IDENTIFIER keyId);
-		
-		
+
+		//BASIC_CONSTAINTS
+		public void sgx_BASIC_CONSTRAINTS_free(WOLFSSL_BASIC_CONSTRAINTS_IDENTIFIER bcId);
+		public int sgx_BASIC_CONSTRAINTS_get_ca(WOLFSSL_BASIC_CONSTRAINTS_IDENTIFIER bcId);
+		public WOLFSSL_ASN1_INTEGER_IDENTIFIER sgx_BASIC_CONSTRAINTS_get_pathlen(WOLFSSL_BASIC_CONSTRAINTS_IDENTIFIER bcId);
 
 		
-/*
-PEM_read_bio_DHparams
-PEM_read_bio_PrivateKey
-*/
+		//ASN1
+		public WOLFSSL_BIGNUM_IDENTIFIER sgx_ASN1_INTEGER_to_BN(WOLFSSL_ASN1_INTEGER_IDENTIFIER asn1IntId);
+		public int sgx_ASN1_STRING_print_ex(WOLFSSL_BIO_IDENTIFIER bioId, WOLFSSL_ASN1_STRING_IDENTIFIER asn1strId, unsigned long flags);
+
+		//BIG NUMBER
+		public void sgx_BN_free(WOLFSSL_BIGNUM_IDENTIFIER bnId);
+		public int sgx_BN_to_int(WOLFSSL_BIGNUM_IDENTIFIER bnId, [out] int* result );
+
+		//X590
+		public uint64_t sgx_X509_get_ext_d2i(WOLFSSL_X509_IDENTIFIER x509id, int nid);
+
+		public WOLFSSL_ASN1_STRING_IDENTIFIER  sgx_X509_NAME_ENTRY_get_data(WOLFSSL_X509_NAME_ENTRY_IDENTIFIER nameEntryId);
+	
 	};
 };

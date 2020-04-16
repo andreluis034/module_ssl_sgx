@@ -5,7 +5,7 @@ enclave {
     from "sgx_tstdc.edl" import *;
 
     trusted {
-		void initSgxLib();
+		public void initSgxLib();
     };
 
     untrusted {

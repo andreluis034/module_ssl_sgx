@@ -50,7 +50,12 @@ Enclave_C_Files := trusted/Enclave.c trusted/WolfSSLExposed/ssl.c \
 	trusted/WolfSSLExposed/bio.c \
 	trusted/WolfSSLExposed/maps.c \
 	trusted/WolfSSLExposed/pem.c \
-	trusted/WolfSSLExposed/evp.c
+	trusted/WolfSSLExposed/evp.c \
+	trusted/WolfSSLExposed/basic_constraints.c \
+	trusted/WolfSSLExposed/asn1.c \
+	trusted/WolfSSLExposed/bn.c \
+	trusted/WolfSSLExposed/x509.c 
+
 
 Enclave_Include_Paths := -IInclude -Itrusted $(Wolfssl_Include_Paths)\
    								   -I$(SGX_SDK)/include -I$(SGX_SDK)/include/tlibc\
