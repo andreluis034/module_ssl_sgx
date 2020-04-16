@@ -3,6 +3,9 @@
 #include "../util_defs.h"
 #include "../Enclave_t.h"
 
+#define GET_BIO(var_name, id, default_return_value) WOLFSSL_BIO* var_name =  WolfBioMapTypeGet(&WolfBioMap, id); if(var_name == NULL) return default_return_value
+
+
 WOLFSSL_BIO_METHOD* GetBioMethod(enum BIO_TYPE type)
 {
 	switch (type)
@@ -152,4 +155,12 @@ int sgx_BIO_free_all(WOLFSSL_BIO_IDENTIFIER bioId)
 WOLFSSL_BIO_METHOD_IDENTIFIER sgx_BIO_f_base64()
 {
 	return WOLFSSL_BIO_BASE64;
+}
+
+
+int sgx_BIO_flush(WOLFSSL_BIO_IDENTIFIER bioId)
+{
+	GET_BIO(bio, bioId, 0);
+
+	return wolfSSL_BIO_flush(bio);
 }
