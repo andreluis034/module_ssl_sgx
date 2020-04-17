@@ -56,7 +56,7 @@ endif
 
 Apache_Include_Paths := -I/opt/httpd/include  -I/usr/include/apr-1.0   -I/usr/include/apr-1.0 # -I/usr/include
 
-App_C_Files := $(UNTRUSTED_DIR)/App.c #$(UNTRUSTED_DIR)/client-tls.c $(UNTRUSTED_DIR)/server-tls.c
+App_C_Files := $(UNTRUSTED_DIR)/mod_ssl.c $(UNTRUSTED_DIR)/ssl_util_ssl.c
 App_Include_Paths := -IInclude $(Wolfssl_Include_Paths) -I$(UNTRUSTED_DIR) -I$(SGX_SDK)/include  $(Apache_Include_Paths)
 
 App_C_Flags := $(SGX_COMMON_CFLAGS) -fPIC -Wno-attributes $(App_Include_Paths) $(Wolfssl_C_Extra_Flags)
@@ -132,7 +132,8 @@ $(UNTRUSTED_DIR)/%.o: $(UNTRUSTED_DIR)/%.c
 	@echo "CC  <=  $<"
 
 $(BIN_OUTPUT): $(UNTRUSTED_DIR)/Enclave_u.o $(App_C_Objects)
-	@$(CC) -shared $^ -o $@ $(App_Link_Flags)
+	@$(CC) $^ -o $@ $(App_Link_Flags)
+#	@$(CC) -shared $^ -o $@ $(App_Link_Flags)
 	@echo "LINK =>  $@"
 
 
