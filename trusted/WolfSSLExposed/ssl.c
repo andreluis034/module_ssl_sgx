@@ -125,3 +125,20 @@ void sgx_SSL_set_ex_data(WOLFSSL_SSL_IDENTIFIER sslId, int appId, void* data)
 	}
 	wolfSSL_set_ex_data(ssl, appId, data);
 }
+
+
+int sgx_OBJ_txt2nid(const char *sn)
+{
+	return wolfSSL_OBJ_txt2nid(sn);
+}
+
+
+int sgx_OBJ_obj2nid(WOLFSSL_ASN1_OBJECT_IDENTIFIER asn1Id)
+{
+	ASN1_OBJECT* asn1Object = WolfAsn1ObjectMapTypeGet(&WolfAsn1ObjectMap, asn1Id); //  WolfSSLCtxMapTypeGet(&WolfSSLCtxMap, id);
+	if (asn1Object == NULL)
+	{
+		return 0;
+	}
+	return wolfSSL_OBJ_obj2nid(asn1Object);
+}

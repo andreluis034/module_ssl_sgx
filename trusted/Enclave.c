@@ -92,3 +92,10 @@ void close(int fd)
 	
 	*deadbeef = 1;
 }
+
+uint32_t LowResTimer()
+{
+    uint32_t ocall_result;
+    ocall_time(&ocall_result);
+    return ocall_result;
+}

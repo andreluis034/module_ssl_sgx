@@ -61,24 +61,19 @@
 /**
  *  Additional Functions
  */
-/*
 void        modssl_init_app_data2_idx(void);
-void       *modssl_get_app_data2(SSL *);
-void        modssl_set_app_data2(SSL *, void *);//*/
-
-/* Read private key from filename in either PEM or raw base64(DER)
- * format, using password entry callback cb and userdata. */
-/*
-EVP_PKEY   *modssl_read_privatekey(const char *filename, pem_password_cb *cb, void *ud);
-
-int         modssl_smart_shutdown(SSL *ssl);
-BOOL        modssl_X509_getBC(X509 *, int *, int *);
-char       *modssl_X509_NAME_ENTRY_to_string(apr_pool_t *p, X509_NAME_ENTRY *xsne,
+void       *modssl_get_app_data2(SSL);
+void        modssl_set_app_data2(SSL, void *);
+EVP_PKEY    modssl_read_privatekey(const char *, EVP_PKEY *, void*, void *);
+EVP_PKEY    modssl_read_encrypted_pkey(const char *, EVP_PKEY *, const char *, apr_size_t);
+int         modssl_smart_shutdown(SSL ssl);
+BOOL        modssl_X509_getBC(X509 , int *, int *);
+char       *modssl_X509_NAME_ENTRY_to_string(apr_pool_t *p, X509_NAME_ENTRY xsne,
                                              int raw);
-char       *modssl_X509_NAME_to_string(apr_pool_t *, X509_NAME *, int);
-BOOL        modssl_X509_getSAN(apr_pool_t *, X509 *, int, const char *, int, apr_array_header_t **);
-BOOL        modssl_X509_match_name(apr_pool_t *, X509 *, const char *, BOOL, server_rec *);
-char       *modssl_SSL_SESSION_id2sz(IDCONST unsigned char *, int, char *, int);//*/
+char       *modssl_X509_NAME_to_string(apr_pool_t *, X509_NAME, int);
+BOOL        modssl_X509_getSAN(apr_pool_t *, X509 , int, const char *, int, apr_array_header_t **);
+BOOL        modssl_X509_match_name(apr_pool_t *, X509, const char *, BOOL, server_rec *);
+char       *modssl_SSL_SESSION_id2sz(IDCONST unsigned char *, int, char *, int);
 
 #endif /* __SSL_UTIL_SSL_H__ */
 /** @} */

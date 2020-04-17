@@ -10,7 +10,7 @@
                 "/home/andre/git/wolfssl",
                 "/home/andre/git/wolfssl/wolfcrypt"
             ],
-            "defines": ["WOLFSSL_SGX", "OPENSSL_EXTRA", "SGX", "WOLFSSL_ENCRYPTED_KEYS", "HAVE_EX_DATA"],
+            "defines": ["WOLFSSL_SGX", "OPENSSL_EXTRA", "SGX", "WOLFSSL_ENCRYPTED_KEYS", "HAVE_EX_DATA", "WOLFSSL_ASIO", "WOLFSSL_APACHE_HTTPD", "WOLFSSL_NGINX",  "HAVE_TLS_EXTENSIONS"],
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "c11",
             "cppStandard": "c++17",

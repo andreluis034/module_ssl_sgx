@@ -21,6 +21,8 @@ enclave {
 		public void 	sgx_SSL_set_ex_data(WOLFSSL_SSL_IDENTIFIER ssl, int appId, [user_check] void* data);
 
 		public WOLFSSL_BIO_IDENTIFIER sgx_SSL_get_wbio(WOLFSSL_SSL_IDENTIFIER ssl);
+		public int sgx_OBJ_txt2nid([in, string]const char *sn);
+		public int sgx_OBJ_obj2nid(WOLFSSL_ASN1_OBJECT_IDENTIFIER asn1Object);
 
 		//BIO
 		public WOLFSSL_BIO_IDENTIFIER sgx_BIO_new_file([in, string] const char *filename, [in, string] const char *mode);
@@ -56,6 +58,8 @@ enclave {
 		//ASN1
 		public WOLFSSL_BIGNUM_IDENTIFIER sgx_ASN1_INTEGER_to_BN(WOLFSSL_ASN1_INTEGER_IDENTIFIER asn1IntId);
 		public int sgx_ASN1_STRING_print_ex(WOLFSSL_BIO_IDENTIFIER bioId, WOLFSSL_ASN1_STRING_IDENTIFIER asn1strId, unsigned long flags);
+		public int sgx_ASN1_TYPE_get_type(WOLFSSL_ASN1_TYPE_IDENTIFIER type);
+		public WOLFSSL_ASN1_STRING_IDENTIFIER sgx_ASN1_TYPE_get_string(WOLFSSL_ASN1_TYPE_IDENTIFIER type);
 
 		//BIG NUMBER
 		public void sgx_BN_free(WOLFSSL_BIGNUM_IDENTIFIER bnId);
@@ -65,6 +69,24 @@ enclave {
 		public uint64_t sgx_X509_get_ext_d2i(WOLFSSL_X509_IDENTIFIER x509id, int nid);
 
 		public WOLFSSL_ASN1_STRING_IDENTIFIER  sgx_X509_NAME_ENTRY_get_data(WOLFSSL_X509_NAME_ENTRY_IDENTIFIER nameEntryId);
+		public int sgx_X509_NAME_print_ex(WOLFSSL_BIO_IDENTIFIER bio_id, WOLFSSL_X509_NAME_IDENTIFIER x509_name_id, int indent, unsigned long flags);
+		public WOLFSSL_X509_NAME_IDENTIFIER sgx_X509_get_subject_name(WOLFSSL_X509_IDENTIFIER x509id);
+		public int sgx_X509_NAME_get_index_by_NID(WOLFSSL_X509_NAME_IDENTIFIER x509NameId, int nid, int pos);
+		public WOLFSSL_X509_NAME_ENTRY_IDENTIFIER sgx_X509_NAME_get_entry(WOLFSSL_X509_NAME_IDENTIFIER x509NameId, int loc);
+		public void sgx_X509_NAME_ENTRY_remove_from_map(WOLFSSL_X509_NAME_ENTRY_IDENTIFIER entryId);
+		
+
+		//STACK
+		public int sgx_sk_GENERAL_NAME_num(WOLFSSL_STACK_IDENTIFIER skId);
+		public WOLFSSL_GENERAL_NAME_IDENTIFIER sgx_sk_GENERAL_NAME_value(WOLFSSL_STACK_IDENTIFIER skId, int index);
+		public int sgx_sk_GENERAL_NAME_pop_free(WOLFSSL_STACK_IDENTIFIER skId);
+
+
+		//GENERAL_NAME
+		public int sgx_GENERAL_NAME_get_type(WOLFSSL_GENERAL_NAME_IDENTIFIER gnId);
+		public WOLFSSL_ASN1_STRING_IDENTIFIER sgx_GENERAL_NAME_get_ia5(WOLFSSL_GENERAL_NAME_IDENTIFIER gnId);
+		public WOLFSSL_ASN1_OBJECT_IDENTIFIER sgx_GENERAL_NAME_get_othername_type_id(WOLFSSL_GENERAL_NAME_IDENTIFIER gnId);
+		public WOLFSSL_ASN1_TYPE_IDENTIFIER   sgx_GENERAL_NAME_get_othername_type_value(WOLFSSL_GENERAL_NAME_IDENTIFIER gnId);
 	
 	};
 };

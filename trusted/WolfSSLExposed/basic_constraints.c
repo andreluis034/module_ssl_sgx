@@ -32,12 +32,12 @@ WOLFSSL_ASN1_INTEGER_IDENTIFIER sgx_BASIC_CONSTRAINTS_get_pathlen(WOLFSSL_BASIC_
 	if (pathlen == NULL)
 		return INVALID_IDENTIFIER;
 	
-	WOLFSSL_ASN1_INTEGER_IDENTIFIER pathlenId = WolfAsn1MapInverseTypeGet(&WolfAsn1MapInverse, pathlen);
+	WOLFSSL_ASN1_INTEGER_IDENTIFIER pathlenId =  WolfAsn1IntergerMapInverseTypeGet(&WolfAsn1IntergerMapInverse, pathlen);
 	if (pathlenId)
 	{
-		RandomUntilNonExistant	(pathlenId, WolfAsn1Map);
-		WolfAsn1MapTypeAdd		(&WolfAsn1Map, pathlenId, pathlen);
-		WolfAsn1MapInverseTypeAdd(&WolfAsn1MapInverse, pathlen, pathlenId);
+		RandomUntilNonExistant	(pathlenId, WolfAsn1IntergerMap);
+		WolfAsn1IntergerMapTypeAdd		(&WolfAsn1IntergerMap, pathlenId, pathlen);
+		WolfAsn1IntergerMapInverseTypeAdd(&WolfAsn1IntergerMapInverse, pathlen, pathlenId);
 		return pathlenId;
 	}
 	

@@ -80,7 +80,7 @@
 #endif
 
 #include "ap_expr.h"
-#include "user_types.h"
+#include "compatabilityHeader.h"
 /* OpenSSL headers */
 //#include <openssl/opensslv.h>
 #if (OPENSSL_VERSION_NUMBER >= 0x10001000)
@@ -971,9 +971,9 @@ int          ssl_callback_SRPServerParams(SSL *, int *, void *);
 #endif
 
 /**  I/O  */
-void         ssl_io_filter_init(conn_rec *, request_rec *r, SSL *);
+void         ssl_io_filter_init(conn_rec *, request_rec *r, SSL);
 void         ssl_io_filter_register(apr_pool_t *);
-long         ssl_io_data_cb(BIO *, int, const char *, int, long, long);
+long         ssl_io_data_cb(BIO, int, const char *, int, long, long);
 
 /* ssl_io_buffer_fill fills the setaside buffering of the HTTP request
  * to allow an SSL renegotiation to take place. */
@@ -1003,9 +1003,9 @@ apr_status_t ssl_load_encrypted_pkey(server_rec *, apr_pool_t *, int,
                                      const char *, apr_array_header_t **);
 
 /**  Diffie-Hellman Parameter Support  */
-DH           *ssl_dh_GetParamFromFile(const char *);
+DH           ssl_dh_GetParamFromFile(const char *);
 #ifdef HAVE_ECC
-EC_GROUP     *ssl_ec_GetParamFromFile(const char *);
+EC_GROUP     ssl_ec_GetParamFromFile(const char *);
 #endif
 
 unsigned char *ssl_asn1_table_set(apr_hash_t *table,
@@ -1043,16 +1043,16 @@ void         ssl_log_ssl_error(const char *, int, int, server_rec *);
  * counterparts. */
 void ssl_log_xerror(const char *file, int line, int level,
                     apr_status_t rv, apr_pool_t *p, server_rec *s,
-                    X509 *cert, const char *format, ...)
+                    X509 cert, const char *format, ...)
     __attribute__((format(printf,8,9)));
 
 void ssl_log_cxerror(const char *file, int line, int level,
-                     apr_status_t rv, conn_rec *c, X509 *cert,
+                     apr_status_t rv, conn_rec *c, X509 cert,
                      const char *format, ...)
     __attribute__((format(printf,7,8)));
 
 void ssl_log_rxerror(const char *file, int line, int level,
-                     apr_status_t rv, request_rec *r, X509 *cert,
+                     apr_status_t rv, request_rec *r, X509 cert,
                      const char *format, ...)
     __attribute__((format(printf,7,8)));
 
