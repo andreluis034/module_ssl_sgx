@@ -552,11 +552,13 @@ BOOL modssl_X509_match_name(apr_pool_t *p, X509 x509, const char *name,
     }
 
     if (s) {
+		printf("[-][%s] Cert %s for name '%s'", (mySrvConfig(s))->vhost_id, matched == TRUE ? "matches" : "does not match", name);
+		/*
         ssl_log_xerror(SSLLOG_MARK, APLOG_DEBUG, 0, p, s, x509,
                        APLOGNO(02412) "[%s] Cert %s for name '%s'",
                        (mySrvConfig(s))->vhost_id,
                        matched == TRUE ? "matches" : "does not match",
-                       name);
+                       name);*/
     }
 
     return matched;

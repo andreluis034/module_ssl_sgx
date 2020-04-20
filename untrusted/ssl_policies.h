@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 /**
  * @verbatim
                         _             _
@@ -30,6 +29,7 @@
  * @ingroup MOD_SSL
  * @{
  */
+
 
 #ifndef __SSL_POLICIES_H__
 #define __SSL_POLICIES_H__

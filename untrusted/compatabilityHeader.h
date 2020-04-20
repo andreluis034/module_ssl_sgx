@@ -251,3 +251,117 @@ enum {
 
 #define V_ASN1_IA5STRING     22
 #define V_ASN1_UTF8STRING    12
+
+
+enum { /* ssl Constants */
+    WOLFSSL_ERROR_NONE      =  0,   /* for most functions */
+    WOLFSSL_FAILURE         =  0,   /* for some functions */
+    WOLFSSL_SUCCESS         =  1,
+    WOLFSSL_SHUTDOWN_NOT_DONE =  2,  /* call wolfSSL_shutdown again to complete */
+
+    WOLFSSL_ALPN_NOT_FOUND  = -9,
+    WOLFSSL_BAD_CERTTYPE    = -8,
+    WOLFSSL_BAD_STAT        = -7,
+    WOLFSSL_BAD_PATH        = -6,
+    WOLFSSL_BAD_FILETYPE    = -5,
+    WOLFSSL_BAD_FILE        = -4,
+    WOLFSSL_NOT_IMPLEMENTED = -3,
+    WOLFSSL_UNKNOWN         = -2,
+    WOLFSSL_FATAL_ERROR     = -1,
+
+    WOLFSSL_FILETYPE_ASN1    = 2,
+    WOLFSSL_FILETYPE_PEM     = 1,
+    WOLFSSL_FILETYPE_DEFAULT = 2, /* ASN1 */
+    WOLFSSL_FILETYPE_RAW     = 3, /* NTRU raw key blob */
+
+    WOLFSSL_VERIFY_NONE                 = 0,
+    WOLFSSL_VERIFY_PEER                 = 1,
+    WOLFSSL_VERIFY_FAIL_IF_NO_PEER_CERT = 2,
+    WOLFSSL_VERIFY_CLIENT_ONCE          = 4,
+    WOLFSSL_VERIFY_FAIL_EXCEPT_PSK      = 8,
+
+    WOLFSSL_SESS_CACHE_OFF                = 0x0000,
+    WOLFSSL_SESS_CACHE_CLIENT             = 0x0001,
+    WOLFSSL_SESS_CACHE_SERVER             = 0x0002,
+    WOLFSSL_SESS_CACHE_BOTH               = 0x0003,
+    WOLFSSL_SESS_CACHE_NO_AUTO_CLEAR      = 0x0008,
+    WOLFSSL_SESS_CACHE_NO_INTERNAL_LOOKUP = 0x0100,
+    WOLFSSL_SESS_CACHE_NO_INTERNAL_STORE  = 0x0200,
+    WOLFSSL_SESS_CACHE_NO_INTERNAL        = 0x0300,
+
+    WOLFSSL_ERROR_WANT_READ        =  2,
+    WOLFSSL_ERROR_WANT_WRITE       =  3,
+    WOLFSSL_ERROR_WANT_CONNECT     =  7,
+    WOLFSSL_ERROR_WANT_ACCEPT      =  8,
+    WOLFSSL_ERROR_SYSCALL          =  5,
+    WOLFSSL_ERROR_WANT_X509_LOOKUP = 83,
+    WOLFSSL_ERROR_ZERO_RETURN      =  6,
+    WOLFSSL_ERROR_SSL              = 85,
+
+    WOLFSSL_SENT_SHUTDOWN     = 1,
+    WOLFSSL_RECEIVED_SHUTDOWN = 2,
+    WOLFSSL_MODE_ACCEPT_MOVING_WRITE_BUFFER = 4,
+
+    WOLFSSL_R_SSL_HANDSHAKE_FAILURE           = 101,
+    WOLFSSL_R_TLSV1_ALERT_UNKNOWN_CA          = 102,
+    WOLFSSL_R_SSLV3_ALERT_CERTIFICATE_UNKNOWN = 103,
+    WOLFSSL_R_SSLV3_ALERT_BAD_CERTIFICATE     = 104,
+
+    WOLF_PEM_BUFSIZE = 1024
+};
+
+enum {
+    SSL_OP_MICROSOFT_SESS_ID_BUG                  = 0x00000001,
+    SSL_OP_NETSCAPE_CHALLENGE_BUG                 = 0x00000002,
+    SSL_OP_NETSCAPE_REUSE_CIPHER_CHANGE_BUG       = 0x00000004,
+    SSL_OP_SSLREF2_REUSE_CERT_TYPE_BUG            = 0x00000008,
+    SSL_OP_MICROSOFT_BIG_SSLV3_BUFFER             = 0x00000010,
+    SSL_OP_MSIE_SSLV2_RSA_PADDING                 = 0x00000020,
+    SSL_OP_SSLEAY_080_CLIENT_DH_BUG               = 0x00000040,
+    SSL_OP_TLS_D5_BUG                             = 0x00000080,
+    SSL_OP_TLS_BLOCK_PADDING_BUG                  = 0x00000100,
+    SSL_OP_TLS_ROLLBACK_BUG                       = 0x00000200,
+    SSL_OP_EPHEMERAL_RSA                          = 0x00000800,
+    WOLFSSL_OP_NO_SSLv3                           = 0x00001000,
+    WOLFSSL_OP_NO_TLSv1                           = 0x00002000,
+    SSL_OP_PKCS1_CHECK_1                          = 0x00004000,
+    SSL_OP_PKCS1_CHECK_2                          = 0x00008000,
+    SSL_OP_NETSCAPE_CA_DN_BUG                     = 0x00010000,
+    SSL_OP_NETSCAPE_DEMO_CIPHER_CHANGE_BUG        = 0x00020000,
+    SSL_OP_SINGLE_DH_USE                          = 0x00040000,
+    SSL_OP_NO_TICKET                              = 0x00080000,
+    SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS            = 0x00100000,
+    SSL_OP_NO_QUERY_MTU                           = 0x00200000,
+    SSL_OP_COOKIE_EXCHANGE                        = 0x00400000,
+    SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION = 0x00800000,
+    SSL_OP_SINGLE_ECDH_USE                        = 0x01000000,
+    SSL_OP_CIPHER_SERVER_PREFERENCE               = 0x02000000,
+    WOLFSSL_OP_NO_TLSv1_1                         = 0x04000000,
+    WOLFSSL_OP_NO_TLSv1_2                         = 0x08000000,
+    SSL_OP_NO_COMPRESSION                         = 0x10000000,
+    WOLFSSL_OP_NO_TLSv1_3                         = 0x20000000,
+    WOLFSSL_OP_NO_SSLv2                           = 0x40000000,
+    SSL_OP_ALL   =
+                    (SSL_OP_MICROSOFT_SESS_ID_BUG
+                  | SSL_OP_NETSCAPE_CHALLENGE_BUG
+                  | SSL_OP_NETSCAPE_REUSE_CIPHER_CHANGE_BUG
+                  | SSL_OP_SSLREF2_REUSE_CERT_TYPE_BUG
+                  | SSL_OP_MICROSOFT_BIG_SSLV3_BUFFER
+                  | SSL_OP_MSIE_SSLV2_RSA_PADDING
+                  | SSL_OP_SSLEAY_080_CLIENT_DH_BUG
+                  | SSL_OP_TLS_D5_BUG
+                  | SSL_OP_TLS_BLOCK_PADDING_BUG
+                  | SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS
+                  | SSL_OP_TLS_ROLLBACK_BUG),
+};
+
+/* for compatibility these must be macros */
+#define SSL_OP_NO_SSLv2   WOLFSSL_OP_NO_SSLv2
+#define SSL_OP_NO_SSLv3   WOLFSSL_OP_NO_SSLv3
+#define SSL_OP_NO_TLSv1   WOLFSSL_OP_NO_TLSv1
+#define SSL_OP_NO_TLSv1_1 WOLFSSL_OP_NO_TLSv1_1
+#define SSL_OP_NO_TLSv1_2 WOLFSSL_OP_NO_TLSv1_2
+
+#define SSL_set_tlsext_host_name
+
+#define OPENSSL_VERSION_NUMBER 0x1000100fL

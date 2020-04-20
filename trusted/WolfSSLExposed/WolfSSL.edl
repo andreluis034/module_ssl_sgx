@@ -3,7 +3,6 @@ enclave {
 //    include "wolfssl/wolfcrypt/settings.h"
 //    include "wolfssl/wolfcrypt/types.h"
 
-	include "user_types.h"
 	
 	trusted {
 
@@ -48,6 +47,8 @@ enclave {
 
 		//EVP
 		public void sgx_EVP_PKEY_free(WOLFSSL_EVP_PKEY_IDENTIFIER keyId);
+		public int sgx_i2d_PrivateKey(WOLFSSL_EVP_PKEY_IDENTIFIER keyId, [out, count=count] unsigned char* der, size_t count);
+
 
 		//BASIC_CONSTAINTS
 		public void sgx_BASIC_CONSTRAINTS_free(WOLFSSL_BASIC_CONSTRAINTS_IDENTIFIER bcId);

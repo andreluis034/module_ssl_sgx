@@ -37,3 +37,5 @@ typedef uint64_t WOLFSSL_ASN1_OBJECT_IDENTIFIER;
 typedef uint64_t WOLFSSL_BIGNUM_IDENTIFIER;
 typedef uint64_t WOLFSSL_STACK_IDENTIFIER;
 typedef uint64_t WOLFSSL_GENERAL_NAME_IDENTIFIER;
+
+#include <time.h>
