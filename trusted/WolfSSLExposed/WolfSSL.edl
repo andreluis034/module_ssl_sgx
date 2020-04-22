@@ -23,6 +23,9 @@ enclave {
 		public int sgx_OBJ_txt2nid([in, string]const char *sn);
 		public int sgx_OBJ_obj2nid(WOLFSSL_ASN1_OBJECT_IDENTIFIER asn1Object);
 
+		public int sgx_i2d_SSL_SESSION(WOLFSSL_SSL_SESSION_IDENTIFIER session, [out, size=length] unsigned char* buffer, size_t length);
+		public WOLFSSL_SSL_SESSION_IDENTIFIER sgx_d2i_SSL_SESSION([out] WOLFSSL_SSL_SESSION_IDENTIFIER* sessionOut, [in, size=length]unsigned char* buffer, size_t length);
+
 		//BIO
 		public WOLFSSL_BIO_IDENTIFIER sgx_BIO_new_file([in, string] const char *filename, [in, string] const char *mode);
 		public WOLFSSL_BIO_IDENTIFIER sgx_BIO_new(WOLFSSL_BIO_METHOD_IDENTIFIER methodId);

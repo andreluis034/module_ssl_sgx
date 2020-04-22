@@ -1,5 +1,7 @@
 #include "maps.h"
 #include <sgx_trts.h>
+#include <sgx_tseal.h>
+
 #include "../util_defs.h"
 
 
@@ -141,4 +143,56 @@ int sgx_OBJ_obj2nid(WOLFSSL_ASN1_OBJECT_IDENTIFIER asn1Id)
 		return 0;
 	}
 	return wolfSSL_OBJ_obj2nid(asn1Object);
+}
+
+
+//https://www.openssl.org/docs/man1.0.2/man3/d2i_SSL_SESSION.html
+int sgx_i2d_SSL_SESSION(WOLFSSL_SSL_SESSION_IDENTIFIER sessionId, unsigned char* buffer, size_t length)
+{
+	WOLFSSL_SESSION* session = MAP_GET(WolfSSLSessionMap, sessionId);
+	if (session == NULL)
+	{
+		return 0;
+	}
+	int size = wolfSSL_i2d_SSL_SESSION(session, NULL);
+	if (buffer == NULL || length == 0)
+	{
+		return size + sizeof(sgx_sealed_data_t);
+	}
+	if (length < size + sizeof(sgx_sealed_data_t))
+		return -1;
+
+	if (sgx_is_within_enclave(buffer, length) != 1)
+		return -1;
+	
+	unsigned char clearTextSession[size];
+	unsigned char * clearTextSessionPtr =  clearTextSession;
+	wolfSSL_i2d_SSL_SESSION(session, &clearTextSessionPtr);
+
+	if(sgx_seal_data(0, NULL, size, clearTextSession, length, (sgx_sealed_data_t*)buffer) == SGX_SUCCESS)
+	{
+		return size + sizeof(sgx_sealed_data_t);
+	}
+
+	return -1;
+}
+
+WOLFSSL_SSL_SESSION_IDENTIFIER sgx_d2i_SSL_SESSION(WOLFSSL_SSL_SESSION_IDENTIFIER* sessionOut, unsigned char* buffer, size_t length)
+{
+	unsigned int realLength = length;
+	unsigned char realAsn1Buffer[length - sizeof(sgx_sealed_data_t)], *ptr;
+	WOLFSSL_SSL_SESSION_IDENTIFIER sessionId = INVALID_IDENTIFIER;
+	if (sgx_unseal_data((sgx_sealed_data_t*)buffer,	NULL, NULL, realAsn1Buffer, &realLength) != SGX_SUCCESS)
+	{
+		return sessionId;
+	}
+	ptr = realAsn1Buffer;
+	WOLFSSL_SESSION* session = wolfSSL_d2i_SSL_SESSION(NULL,(const unsigned char**) &ptr, realLength);
+	InsertInMapTwoWay(sessionId, session, WolfSSLSessionMap);
+
+	if(sessionOut != NULL)
+	{
+		*sessionOut = sessionId;
+	}
+	return sessionId;
 }

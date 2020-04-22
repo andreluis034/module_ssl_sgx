@@ -8,13 +8,14 @@
 	extern typeName ## InverseType typeName ##Inverse;
 
 
-#define InsertInMap(keyVar, valVar, map) RandomUntilNonExistant(keyVar, map); map ## TypeAdd(&map, keyVar, valVar); map ## InverseTypeAdd(&map ## Inverse, valVar, keyVar);
-#define CheckExistingOrCreate(outType, outVar, inVar, map) outType outVar = map ## InverseTypeGet(&map ## Inverse, inVar); if(outVar == INVALID_IDENTIFIER) {InsertInMap(outVar, inVar, map)}
+#define InsertInMapTwoWay(keyVar, valVar, map) RandomUntilNonExistant(keyVar, map); map ## TypeAdd(&map, keyVar, valVar); map ## InverseTypeAdd(&map ## Inverse, valVar, keyVar);
+#define CheckExistingOrCreate(outType, outVar, inVar, map) outType outVar = map ## InverseTypeGet(&map ## Inverse, inVar); if(outVar == INVALID_IDENTIFIER) {InsertInMapTwoWay(outVar, inVar, map)}
 #define MAP_GET(map, key) map ## TypeGet(&map, key);
 #define MAP_REMOVE_TWO_WAY(map, key, value) map ## TypeRemove(&map, key); map ## InverseTypeRemove(&map ## Inverse, value);
 //SSL
 define_two_way_maps_h(WolfSSLCtxMap, WOLFSSL_SSL_CTX_IDENTIFIER, WOLFSSL_CTX*)
 define_two_way_maps_h(WolfSSLMap, 	WOLFSSL_SSL_IDENTIFIER, 	WOLFSSL*)
+define_two_way_maps_h(WolfSSLSessionMap, 	WOLFSSL_SSL_SESSION_IDENTIFIER, 	WOLFSSL_SESSION*)
 
 //BIO
 define_two_way_maps_h(WolfBioMap,		WOLFSSL_BIO_IDENTIFIER, 		WOLFSSL_BIO*)

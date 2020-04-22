@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/**
+/**>
  * @verbatim
                         _             _
     _ __ ___   ___   __| |    ___ ___| |  mod_ssl
@@ -34,6 +34,8 @@
 #ifndef __SSL_UTIL_SSL_H__
 #define __SSL_UTIL_SSL_H__
 
+#include <sgx_tseal.h>
+
 /**
  * SSL library version number
  */
@@ -52,7 +54,7 @@
  *  FIXME: There is no define in OpenSSL, but OpenSSL uses 1024*10,
  *         so this value should be ok. Although we have no warm feeling.
  */
-#define MODSSL_SESSION_MAX_DER 1024*10
+#define MODSSL_SESSION_MAX_DER 1024*10 + sizeof(sgx_sealed_data_t)
 
 /** max length for modssl_SSL_SESSION_id2sz */
 #define MODSSL_SESSION_ID_STRING_LEN \

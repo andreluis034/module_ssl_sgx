@@ -32,8 +32,9 @@ uint32_t hashKey(uint64_t key)
 }
 
 //SSL
-define_two_way_maps_c(WolfSSLCtxMap, WOLFSSL_SSL_CTX_IDENTIFIER, WOLFSSL_CTX*, 	hashKey, equalKeys, NULL, 0)
-define_two_way_maps_c(WolfSSLMap, 	WOLFSSL_SSL_IDENTIFIER, 	WOLFSSL*, 		hashKey, equalKeys, NULL, 0)
+define_two_way_maps_c(WolfSSLCtxMap, 		WOLFSSL_SSL_CTX_IDENTIFIER, 		WOLFSSL_CTX*, 		hashKey, equalKeys, NULL, 0)
+define_two_way_maps_c(WolfSSLMap, 			WOLFSSL_SSL_IDENTIFIER, 			WOLFSSL*, 			hashKey, equalKeys, NULL, 0)
+define_two_way_maps_c(WolfSSLSessionMap, 	WOLFSSL_SSL_SESSION_IDENTIFIER, 	WOLFSSL_SESSION*,	hashKey, equalKeys, NULL, 0)
 
 //BIO
 define_two_way_maps_c(WolfBioMap,		WOLFSSL_BIO_IDENTIFIER, 		WOLFSSL_BIO*, 			hashKey, equalKeys, NULL,0)
@@ -74,6 +75,7 @@ void InitMaps()
 	//SSL
 	INIT_MAP(WolfSSLCtxMap);
 	INIT_MAP(WolfSSLMap);
+	INIT_MAP(WolfSSLSessionMap);
 
 	//BIO
 	INIT_MAP(WolfBioMap);
