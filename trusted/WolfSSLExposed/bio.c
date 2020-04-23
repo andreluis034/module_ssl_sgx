@@ -178,3 +178,11 @@ int sgx_BIO_read(WOLFSSL_BIO_IDENTIFIER bioId, void* buffer, size_t len)
 
 	return wolfSSL_BIO_read(bio, buffer, len);
 }
+
+
+int sgx_BIO_puts(WOLFSSL_BIO_IDENTIFIER bioId, const char *buf)
+{
+	GET_BIO(bio, bioId, 0);
+
+	return wolfSSL_BIO_puts(bio, buf);
+}

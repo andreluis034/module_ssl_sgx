@@ -54,6 +54,7 @@ define_two_way_maps_c(WolfAsn1IntergerMap,	WOLFSSL_ASN1_INTEGER_IDENTIFIER, 		WO
 define_two_way_maps_c(WolfAsn1StringMap,	WOLFSSL_ASN1_STRING_IDENTIFIER, 		WOLFSSL_ASN1_STRING*, 	hashKey, equalKeys, NULL, 0)
 define_two_way_maps_c(WolfAsn1TypeMap,		WOLFSSL_ASN1_TYPE_IDENTIFIER, 			WOLFSSL_ASN1_TYPE*, 	hashKey, equalKeys, NULL, 0)
 define_two_way_maps_c(WolfAsn1ObjectMap,	WOLFSSL_ASN1_OBJECT_IDENTIFIER, 		WOLFSSL_ASN1_OBJECT*, 	hashKey, equalKeys, NULL, 0)
+define_two_way_maps_c(WolfAsn1TimeMap,		WOLFSSL_ASN1_TIME_IDENTIFIER, 			WOLFSSL_ASN1_TIME*, 	hashKey, equalKeys, NULL, 0)
 
 //BIGNUM
 define_two_way_maps_c(WolfBigNumberMap,	WOLFSSL_BIGNUM_IDENTIFIER, 		WOLFSSL_BIGNUM*, hashKey, equalKeys, NULL, 0)
@@ -94,6 +95,7 @@ void InitMaps()
 	INIT_MAP(WolfAsn1StringMap);
 	INIT_MAP(WolfAsn1TypeMap);
 	INIT_MAP(WolfAsn1ObjectMap);
+	INIT_MAP(WolfAsn1TimeMap);
 
 	//BIGNUMBER
 	INIT_MAP(WolfBigNumberMap);

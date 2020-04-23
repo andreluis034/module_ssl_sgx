@@ -485,7 +485,6 @@ static BOOL getIDs(apr_pool_t *p, X509 x509, apr_array_header_t **ids)
 
     return apr_is_empty_array(*ids) ? FALSE : TRUE;
 }
-
 /* 
  * Check if a certificate matches for a particular name, by iterating over its
  * DNS-IDs and CN-IDs (RFC 6125), optionally with basic wildcard matching.

@@ -40,7 +40,7 @@ endif
 Crypto_Library_Name := sgx_tcrypto
 
 
-Wolfssl_C_Extra_Flags := -DWOLFSSL_SGX -DOPENSSL_EXTRA -DSGX -DWOLFSSL_ENCRYPTED_KEYS -DHAVE_EX_DATA -DWOLFSSL_ASIO -DWOLFSSL_APACHE_HTTPD -DWOLFSSL_NGINX -DHAVE_TLS_EXTENSIONS -DUSE_WOLF_VALIDDATE -DWOLFSSL_CERT_GEN -DWOLFSSL_CERT_REQ -DHAVE_SNI
+Wolfssl_C_Extra_Flags := -DWOLFSSL_SGX -DOPENSSL_EXTRA -DSGX -DWOLFSSL_ENCRYPTED_KEYS -DHAVE_EX_DATA -DWOLFSSL_ASIO -DWOLFSSL_APACHE_HTTPD -DWOLFSSL_NGINX -DHAVE_TLS_EXTENSIONS -DWOLFSSL_CERT_GEN -DWOLFSSL_CERT_REQ -DHAVE_SNI
 Wolfssl_Include_Paths := -I$(WOLFSSL_ROOT)/ \
 						 -I$(WOLFSSL_ROOT)/wolfcrypt/
 
@@ -56,7 +56,8 @@ Enclave_C_Files := trusted/Enclave.c trusted/WolfSSLExposed/ssl.c \
 	trusted/WolfSSLExposed/bn.c \
 	trusted/WolfSSLExposed/x509.c \
 	trusted/WolfSSLExposed/general_name.c \
-	trusted/WolfSSLExposed/sk.c 
+	trusted/WolfSSLExposed/sk.c \
+	trusted/WolfSSLExposed/error.c 
 
 
 Enclave_Include_Paths := -IInclude -Itrusted $(Wolfssl_Include_Paths)\

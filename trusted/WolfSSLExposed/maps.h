@@ -12,6 +12,8 @@
 #define CheckExistingOrCreate(outType, outVar, inVar, map) outType outVar = map ## InverseTypeGet(&map ## Inverse, inVar); if(outVar == INVALID_IDENTIFIER) {InsertInMapTwoWay(outVar, inVar, map)}
 #define MAP_GET(map, key) map ## TypeGet(&map, key);
 #define MAP_REMOVE_TWO_WAY(map, key, value) map ## TypeRemove(&map, key); map ## InverseTypeRemove(&map ## Inverse, value);
+#define REMOVE_TWO_WAY_FROM_POINTER(map, address) {uint64_t id = MAP_GET(map ## Inverse, address); if(id != INVALID_IDENTIFIER){MAP_REMOVE_TWO_WAY(map, id, address);}}
+
 //SSL
 define_two_way_maps_h(WolfSSLCtxMap, WOLFSSL_SSL_CTX_IDENTIFIER, WOLFSSL_CTX*)
 define_two_way_maps_h(WolfSSLMap, 	WOLFSSL_SSL_IDENTIFIER, 	WOLFSSL*)
@@ -36,6 +38,7 @@ define_two_way_maps_h(WolfAsn1IntergerMap,	WOLFSSL_ASN1_INTEGER_IDENTIFIER, 		WO
 define_two_way_maps_h(WolfAsn1StringMap,	WOLFSSL_ASN1_STRING_IDENTIFIER, 		WOLFSSL_ASN1_STRING*)
 define_two_way_maps_h(WolfAsn1TypeMap,		WOLFSSL_ASN1_TYPE_IDENTIFIER, 			WOLFSSL_ASN1_TYPE*)
 define_two_way_maps_h(WolfAsn1ObjectMap,	WOLFSSL_ASN1_OBJECT_IDENTIFIER, 		WOLFSSL_ASN1_OBJECT*)
+define_two_way_maps_h(WolfAsn1TimeMap,		WOLFSSL_ASN1_TIME_IDENTIFIER, 			WOLFSSL_ASN1_TIME*)
 
 
 //BigNumber

@@ -59,7 +59,10 @@ Apache_Include_Paths := -I/opt/httpd/include  -I/usr/include/apr-1.0   -I/usr/in
 App_C_Files := $(UNTRUSTED_DIR)/mod_ssl.c \
 	$(UNTRUSTED_DIR)/ssl_util_ssl.c \
 	$(UNTRUSTED_DIR)/ssl_util.c \
-	$(UNTRUSTED_DIR)/ssl_scache.c
+	$(UNTRUSTED_DIR)/ssl_scache.c \
+	$(UNTRUSTED_DIR)/ssl_engine_mutex.c \
+	$(UNTRUSTED_DIR)/ssl_engine_log.c
+
 App_Include_Paths := -IInclude $(Wolfssl_Include_Paths) -I$(UNTRUSTED_DIR) -I$(SGX_SDK)/include  $(Apache_Include_Paths)
 
 App_C_Flags := $(SGX_COMMON_CFLAGS) -fPIC -Wno-attributes $(App_Include_Paths) $(Wolfssl_C_Extra_Flags)

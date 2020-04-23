@@ -30,6 +30,7 @@ enclave {
 		public WOLFSSL_BIO_IDENTIFIER sgx_BIO_new_file([in, string] const char *filename, [in, string] const char *mode);
 		public WOLFSSL_BIO_IDENTIFIER sgx_BIO_new(WOLFSSL_BIO_METHOD_IDENTIFIER methodId);
 		public WOLFSSL_BIO_IDENTIFIER sgx_BIO_push(WOLFSSL_BIO_IDENTIFIER bioId1, WOLFSSL_BIO_IDENTIFIER bioId2);
+		public int    sgx_BIO_puts(WOLFSSL_BIO_IDENTIFIER bioId, [string, in]const char *buf);
     	public int sgx_BIO_free_all(WOLFSSL_BIO_IDENTIFIER bioId);
 		public WOLFSSL_EVP_PKEY_IDENTIFIER sgx_d2i_PrivateKey_bio(WOLFSSL_BIO_IDENTIFIER bioId);
 		
@@ -64,6 +65,8 @@ enclave {
 		public int sgx_ASN1_STRING_print_ex(WOLFSSL_BIO_IDENTIFIER bioId, WOLFSSL_ASN1_STRING_IDENTIFIER asn1strId, unsigned long flags);
 		public int sgx_ASN1_TYPE_get_type(WOLFSSL_ASN1_TYPE_IDENTIFIER type);
 		public WOLFSSL_ASN1_STRING_IDENTIFIER sgx_ASN1_TYPE_get_string(WOLFSSL_ASN1_TYPE_IDENTIFIER type);
+		public int sgx_i2a_ASN1_INTEGER(WOLFSSL_BIO_IDENTIFIER bioId, WOLFSSL_ASN1_INTEGER_IDENTIFIER asn1IntId);
+		public int sgx_ASN1_TIME_print(WOLFSSL_BIO_IDENTIFIER bioId, WOLFSSL_ASN1_TIME_IDENTIFIER timeId);
 
 		//BIG NUMBER
 		public void sgx_BN_free(WOLFSSL_BIGNUM_IDENTIFIER bnId);
@@ -72,13 +75,20 @@ enclave {
 		//X590
 		public uint64_t sgx_X509_get_ext_d2i(WOLFSSL_X509_IDENTIFIER x509id, int nid);
 
-		public WOLFSSL_ASN1_STRING_IDENTIFIER  sgx_X509_NAME_ENTRY_get_data(WOLFSSL_X509_NAME_ENTRY_IDENTIFIER nameEntryId);
+		public WOLFSSL_ASN1_STRING_IDENTIFIER  		sgx_X509_NAME_ENTRY_get_data(WOLFSSL_X509_NAME_ENTRY_IDENTIFIER nameEntryId);
+		public WOLFSSL_X509_NAME_ENTRY_IDENTIFIER 	sgx_X509_NAME_get_entry(WOLFSSL_X509_NAME_IDENTIFIER x509NameId, int loc);
+		public WOLFSSL_X509_NAME_IDENTIFIER 		sgx_X509_get_subject_name(WOLFSSL_X509_IDENTIFIER x509id);
+		public WOLFSSL_X509_NAME_IDENTIFIER 		sgx_X509_get_issuer_name (WOLFSSL_X509_IDENTIFIER x509id);
+		public WOLFSSL_ASN1_INTEGER_IDENTIFIER		sgx_X509_get_serialNumber(WOLFSSL_X509_IDENTIFIER x509id);
+		public WOLFSSL_ASN1_TIME_IDENTIFIER			sgx_X509_get_notBefore(WOLFSSL_X509_IDENTIFIER x509id);
+		public WOLFSSL_ASN1_TIME_IDENTIFIER			sgx_X509_get_notAfter(WOLFSSL_X509_IDENTIFIER x509id);
+
 		public int sgx_X509_NAME_print_ex(WOLFSSL_BIO_IDENTIFIER bio_id, WOLFSSL_X509_NAME_IDENTIFIER x509_name_id, int indent, unsigned long flags);
-		public WOLFSSL_X509_NAME_IDENTIFIER sgx_X509_get_subject_name(WOLFSSL_X509_IDENTIFIER x509id);
 		public int sgx_X509_NAME_get_index_by_NID(WOLFSSL_X509_NAME_IDENTIFIER x509NameId, int nid, int pos);
-		public WOLFSSL_X509_NAME_ENTRY_IDENTIFIER sgx_X509_NAME_get_entry(WOLFSSL_X509_NAME_IDENTIFIER x509NameId, int loc);
-		public void sgx_X509_NAME_ENTRY_remove_from_map(WOLFSSL_X509_NAME_ENTRY_IDENTIFIER entryId);
+
+		public void sgx_X509_free(WOLFSSL_X509_IDENTIFIER x509id);
 		
+		public void sgx_X509_NAME_ENTRY_remove_from_map(WOLFSSL_X509_NAME_ENTRY_IDENTIFIER entryId);
 
 		//STACK
 		public int sgx_sk_GENERAL_NAME_num(WOLFSSL_STACK_IDENTIFIER skId);
@@ -91,6 +101,10 @@ enclave {
 		public WOLFSSL_ASN1_STRING_IDENTIFIER sgx_GENERAL_NAME_get_ia5(WOLFSSL_GENERAL_NAME_IDENTIFIER gnId);
 		public WOLFSSL_ASN1_OBJECT_IDENTIFIER sgx_GENERAL_NAME_get_othername_type_id(WOLFSSL_GENERAL_NAME_IDENTIFIER gnId);
 		public WOLFSSL_ASN1_TYPE_IDENTIFIER   sgx_GENERAL_NAME_get_othername_type_value(WOLFSSL_GENERAL_NAME_IDENTIFIER gnId);
+
+		//ERR
+		public void sgx_ERR_error_string_n(unsigned long e, [out, size = len] char* buf, unsigned long len);
+		public unsigned long sgx_ERR_get_error();
 	
 	};
 };

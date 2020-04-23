@@ -38,6 +38,7 @@
 
 #include "WolfSSLExposed/maps.h"
 #include <wolfssl/ssl.h>
+
 /* 
  * printf: 
  *   Invokes OCALL to display the enclave buffer to the terminal.
@@ -104,16 +105,19 @@ time_t LowResTimer()
 }
 
 //User for cert generation
-time_t XTIME(time_t time)
+time_t sgx_time(time_t* time)
 {
-	return LowResTimer();
+	time_t localTime = LowResTimer();
+	if(time != NULL)
+		*time = localTime;
+	return localTime;
 }
 
-struct tm* XGMTIME(time_t time, struct tm* out)
+struct tm* sgx_gmtime(time_t* time, struct tm* out)
 {
 	static struct tm time_st;
 	struct tm* retAddress = out == NULL ? &time_st : out;
-	ocall_GMTIME(retAddress, time);
+	ocall_GMTIME(retAddress, *time);
 	return retAddress;
 }
 
