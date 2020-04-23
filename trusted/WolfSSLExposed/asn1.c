@@ -54,3 +54,29 @@ WOLFSSL_ASN1_STRING_IDENTIFIER sgx_ASN1_TYPE_get_string(WOLFSSL_ASN1_TYPE_IDENTI
 	}
 	return asn1Id;
 }
+
+
+int sgx_i2a_ASN1_INTEGER(WOLFSSL_BIO_IDENTIFIER bioId, WOLFSSL_ASN1_INTEGER_IDENTIFIER asn1IntId)
+{
+	WOLFSSL_BIO* bio = MAP_GET(WolfBioMap, bioId);
+	if(bio == NULL)
+		return -1;
+	WOLFSSL_ASN1_INTEGER* asn1Int = MAP_GET(WolfAsn1IntergerMap, asn1IntId);
+	if (asn1Int == NULL)
+		return -1;
+	
+	return wolfSSL_i2a_ASN1_INTEGER(bio, asn1Int);
+
+}
+
+int sgx_ASN1_TIME_print(WOLFSSL_BIO_IDENTIFIER bioId, WOLFSSL_ASN1_TIME_IDENTIFIER timeId)
+{
+	WOLFSSL_BIO* bio = MAP_GET(WolfBioMap, bioId);
+	if(bio == NULL)
+		return -1;
+	WOLFSSL_ASN1_TIME* time = MAP_GET(WolfAsn1TimeMap, timeId);
+	if (time == NULL)
+		return -1;
+
+	return wolfSSL_ASN1_TIME_print(bio, time);
+}

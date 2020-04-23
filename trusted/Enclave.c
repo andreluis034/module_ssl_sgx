@@ -37,6 +37,7 @@
 #include "Enclave_t.h"  /* print_string */
 
 #include "WolfSSLExposed/maps.h"
+#include <wolfssl/ssl.h>
 
 /* 
  * printf: 
@@ -52,7 +53,10 @@ void printf(const char *fmt, ...)
     ocall_print_string(buf);
 }
 
-
+void* fopen(char* a, char*b)
+{
+	return NULL;
+}
 void initSgxLib()
 {
 	InitMaps();
@@ -93,9 +97,27 @@ void close(int fd)
 	*deadbeef = 1;
 }
 
-uint32_t LowResTimer()
+time_t LowResTimer()
 {
-    uint32_t ocall_result;
+    time_t ocall_result;
     ocall_time(&ocall_result);
     return ocall_result;
 }
+
+//User for cert generation
+time_t sgx_time(time_t* time)
+{
+	time_t localTime = LowResTimer();
+	if(time != NULL)
+		*time = localTime;
+	return localTime;
+}
+
+struct tm* sgx_gmtime(time_t* time, struct tm* out)
+{
+	static struct tm time_st;
+	struct tm* retAddress = out == NULL ? &time_st : out;
+	ocall_GMTIME(retAddress, *time);
+	return retAddress;
+}
+

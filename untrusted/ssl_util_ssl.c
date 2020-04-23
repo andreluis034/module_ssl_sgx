@@ -485,7 +485,6 @@ static BOOL getIDs(apr_pool_t *p, X509 x509, apr_array_header_t **ids)
 
     return apr_is_empty_array(*ids) ? FALSE : TRUE;
 }
-
 /* 
  * Check if a certificate matches for a particular name, by iterating over its
  * DNS-IDs and CN-IDs (RFC 6125), optionally with basic wildcard matching.
@@ -552,11 +551,13 @@ BOOL modssl_X509_match_name(apr_pool_t *p, X509 x509, const char *name,
     }
 
     if (s) {
+		printf("[-][%s] Cert %s for name '%s'", (mySrvConfig(s))->vhost_id, matched == TRUE ? "matches" : "does not match", name);
+		/*
         ssl_log_xerror(SSLLOG_MARK, APLOG_DEBUG, 0, p, s, x509,
                        APLOGNO(02412) "[%s] Cert %s for name '%s'",
                        (mySrvConfig(s))->vhost_id,
                        matched == TRUE ? "matches" : "does not match",
-                       name);
+                       name);*/
     }
 
     return matched;

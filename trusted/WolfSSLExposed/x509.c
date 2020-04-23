@@ -66,16 +66,8 @@ int sgx_X509_NAME_print_ex(WOLFSSL_BIO_IDENTIFIER bio_id, WOLFSSL_X509_NAME_IDEN
 
 
 
-WOLFSSL_X509_NAME_IDENTIFIER sgx_X509_get_subject_name(WOLFSSL_X509_IDENTIFIER x509id)
-{
-	WOLFSSL_X509* x509 =  WolfX509MapTypeGet(&WolfX509Map, x509id); if(x509 == NULL) return INVALID_IDENTIFIER;
-	WOLFSSL_X509_NAME* name = wolfSSL_X509_get_subject_name(x509);
-	
 
-	CheckExistingOrCreate(WOLFSSL_X509_NAME_IDENTIFIER, nameId, name, WolfX509NameMap);
 
-	return nameId;
-}
 
 int sgx_X509_NAME_get_index_by_NID(WOLFSSL_X509_NAME_IDENTIFIER x509NameId, int nid, int pos)
 {
@@ -109,4 +101,80 @@ void sgx_X509_NAME_ENTRY_remove_from_map(WOLFSSL_X509_NAME_ENTRY_IDENTIFIER entr
 		return;
 	MAP_REMOVE_TWO_WAY(WolfX509NameEntryMap, entryId, name);
 
+}
+
+WOLFSSL_X509_NAME_IDENTIFIER sgx_X509_get_subject_name(WOLFSSL_X509_IDENTIFIER x509id)
+{
+	WOLFSSL_X509* x509 =  WolfX509MapTypeGet(&WolfX509Map, x509id); 
+	if(x509 == NULL) 
+		return INVALID_IDENTIFIER;
+	WOLFSSL_X509_NAME* name = wolfSSL_X509_get_subject_name(x509);
+	
+
+	CheckExistingOrCreate(WOLFSSL_X509_NAME_IDENTIFIER, nameId, name, WolfX509NameMap);
+
+	return nameId;
+}
+
+WOLFSSL_X509_NAME_IDENTIFIER sgx_X509_get_issuer_name (WOLFSSL_X509_IDENTIFIER x509id)
+{
+	WOLFSSL_X509* x509 =  WolfX509MapTypeGet(&WolfX509Map, x509id); 
+	if(x509 == NULL) 
+		return INVALID_IDENTIFIER;
+	WOLFSSL_X509_NAME* name = wolfSSL_X509_get_issuer_name(x509);
+	
+
+	CheckExistingOrCreate(WOLFSSL_X509_NAME_IDENTIFIER, nameId, name, WolfX509NameMap);
+
+	return nameId;
+}
+
+
+WOLFSSL_ASN1_INTEGER_IDENTIFIER		sgx_X509_get_serialNumber(WOLFSSL_X509_IDENTIFIER x509id)
+{
+	WOLFSSL_X509* x509 = MAP_GET(WolfX509Map, x509id);
+	if(x509 == NULL)
+		return INVALID_IDENTIFIER;
+	WOLFSSL_ASN1_INTEGER* serialNumber = wolfSSL_X509_get_serialNumber(x509);
+
+	CheckExistingOrCreate(WOLFSSL_ASN1_INTEGER_IDENTIFIER, serialNumberId, serialNumber, WolfAsn1IntergerMap);
+
+	return serialNumberId;
+}
+
+WOLFSSL_ASN1_TIME_IDENTIFIER			sgx_X509_get_notBefore(WOLFSSL_X509_IDENTIFIER x509id)
+{
+	WOLFSSL_X509* x509 = MAP_GET(WolfX509Map, x509id);
+	if(x509 == NULL)
+		return INVALID_IDENTIFIER;
+
+	WOLFSSL_ASN1_TIME* time = wolfSSL_X509_get_notBefore(x509);
+	CheckExistingOrCreate(WOLFSSL_ASN1_TIME_IDENTIFIER, timeId, time, WolfAsn1TimeMap);
+	return timeId;
+}
+
+WOLFSSL_ASN1_TIME_IDENTIFIER			sgx_X509_get_notAfter(WOLFSSL_X509_IDENTIFIER x509id)
+{
+	WOLFSSL_X509* x509 = MAP_GET(WolfX509Map, x509id);
+	if(x509 == NULL)
+		return INVALID_IDENTIFIER;
+	WOLFSSL_ASN1_TIME* time = wolfSSL_X509_get_notAfter(x509);
+	CheckExistingOrCreate(WOLFSSL_ASN1_TIME_IDENTIFIER, timeId, time, WolfAsn1TimeMap);
+	return timeId;
+}
+void sgx_X509_free(WOLFSSL_X509_IDENTIFIER x509id)
+{
+	WOLFSSL_X509* x509 = MAP_GET(WolfX509Map, x509id);
+	if(x509 == NULL)
+		return;
+
+	MAP_REMOVE_TWO_WAY(WolfX509Map, x509id, x509);
+	//Clear all the getters
+	REMOVE_TWO_WAY_FROM_POINTER(WolfX509NameMap,		wolfSSL_X509_get_subject_name(x509));
+	REMOVE_TWO_WAY_FROM_POINTER(WolfX509NameMap, 		wolfSSL_X509_get_issuer_name(x509));
+	REMOVE_TWO_WAY_FROM_POINTER(WolfAsn1IntergerMap, 	wolfSSL_X509_get_serialNumber(x509));
+	REMOVE_TWO_WAY_FROM_POINTER(WolfAsn1TimeMap, 		wolfSSL_X509_get_notBefore(x509));
+	REMOVE_TWO_WAY_FROM_POINTER(WolfAsn1TimeMap, 		wolfSSL_X509_get_notAfter(x509));
+
+	wolfSSL_X509_free(x509);
 }

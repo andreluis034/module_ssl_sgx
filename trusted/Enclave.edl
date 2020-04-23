@@ -1,6 +1,9 @@
 /* Benchmark_Enclave.edl - Top EDL file. */
 enclave {
 
+	include "user_types.h"
+
+
     from "WolfSSLExposed/WolfSSL.edl" import *;
     from "sgx_tstdc.edl" import *;
 
@@ -19,7 +22,8 @@ enclave {
 //		size_t ocall_recv(int sockfd, [out, size=len] void *buf, size_t len, int flags) propagate_errno;
 //      size_t ocall_send(int sockfd, [in, size=len] const void *buf, size_t len, int flags) propagate_errno;
 
-        uint32_t ocall_time();
+        time_t ocall_time();
+		struct tm ocall_GMTIME(time_t time);
         
     };
 };

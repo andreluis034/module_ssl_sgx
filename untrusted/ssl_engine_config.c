@@ -63,7 +63,7 @@ SSLModConfigRec *ssl_config_global_create(server_rec *s)
     /*
      * initialize per-module configuration
      */
-    mc->sesscache_mode         = SSL_SESS_CACHE_OFF;
+    mc->sesscache_mode         = WOLFSSL_SESS_CACHE_OFF;
     mc->sesscache              = NULL;
     mc->pMutex                 = NULL;
     mc->aRandSeed              = apr_array_make(pool, 4,
@@ -118,7 +118,7 @@ static void modssl_ctx_init(modssl_ctx_t *mctx, apr_pool_t *p)
 {
     mctx->sc                  = NULL; /* set during module init */
 
-    mctx->ssl_ctx             = NULL; /* set during module init */
+    mctx->ssl_ctx             = INVALID_IDENTIFIER; /* set during module init */
 
     mctx->pks                 = NULL;
     mctx->pkp                 = NULL;
@@ -486,7 +486,7 @@ void *ssl_config_perdir_merge(apr_pool_t *p, void *basev, void *addv)
          * we are still before post config, or we really want to reuse the one
          * from the upper/server context (outside of <Proxy> sections).
          */
-        cfgMerge(proxy->ssl_ctx, NULL);
+        cfgMerge(proxy->ssl_ctx, INVALID_IDENTIFIER);
     }
     else {
         /* The post_config hook has already merged and initialized the
@@ -933,7 +933,8 @@ static const char *ssl_cmd_check_file(cmd_parms *parms,
                        "' does not exist or is empty", NULL);
 
 }
-
+//WOLFSSL does not implement compression 
+#define OPENSSL_NO_COMP
 const char *ssl_cmd_SSLCompression(cmd_parms *cmd, void *dcfg, int flag)
 {
 #if !defined(OPENSSL_NO_COMP)
@@ -1348,7 +1349,7 @@ const char *ssl_cmd_SSLSessionCache(cmd_parms *cmd,
      * OpenSSL-internal session cache being used in addition to the
      * "external" (mod_ssl-provided) cache, which otherwise causes
      * additional memory consumption. */
-    enabled_flags = SSL_SESS_CACHE_SERVER | SSL_SESS_CACHE_NO_INTERNAL;
+    enabled_flags = WOLFSSL_SESS_CACHE_SERVER | WOLFSSL_SESS_CACHE_NO_INTERNAL;
 
     if (strcEQ(arg, "none")) {
         /* Nothing to do; session cache will be off. */
@@ -2244,7 +2245,12 @@ void ssl_hook_ConfigTest(apr_pool_t *pconf, server_rec *s)
     }
 
     if (ap_exists_config_define("DUMP_CERTS")) {
-        apr_file_open_sssl_hook_Config
+        apr_file_open_stdout(&out, pconf);
+        apr_file_printf(out, "Server certificates:\n");
+
+        /* Dump the filenames of all configured server certificates to
+        * stdout. */
+        while (s) {
             SSLSrvConfigRec *sc = mySrvConfig(s);
 
             if (sc && sc->server && sc->server->pks) {
