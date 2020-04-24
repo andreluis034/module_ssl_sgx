@@ -31,7 +31,7 @@ WOLFSSL_SSL_IDENTIFIER sgx_SSL_new(WOLFSSL_SSL_CTX_IDENTIFIER id)
 	return sslId;
 }
 
-int sgx_SSL_get_shutdown(WOLFSSL_SSL_IDENTIFIER sslId)
+long sgx_SSL_get_shutdown(WOLFSSL_SSL_IDENTIFIER sslId)
 {
 	WOLFSSL* ssl =  WolfSSLMapTypeGet(&WolfSSLMap, sslId);
 	if (ssl == NULL)
@@ -49,27 +49,6 @@ int	sgx_SSL_shutdown(WOLFSSL_SSL_IDENTIFIER sslId)
 	return wolfSSL_shutdown(ssl);
 }
 
-WOLFSSL_BIO_IDENTIFIER sgx_SSL_get_wbio(WOLFSSL_SSL_IDENTIFIER sslId)
-{
-	WOLFSSL_BIO_IDENTIFIER retBioId;
-	GET_SSL(ssl, sslId, INVALID_IDENTIFIER);
-
-	BIO* bio = wolfSSL_SSL_get_wbio(ssl);
-
-	if(bio == NULL) return INVALID_IDENTIFIER;
-
-	retBioId = WolfBioMapInverseTypeGet(&WolfBioMapInverse, bio);
-	if(retBioId == INVALID_IDENTIFIER)
-	{
-		RandomUntilNonExistant	(retBioId, WolfBioMap);
-		WolfBioMapTypeAdd		(&WolfBioMap, retBioId, bio);
-		WolfBioMapInverseTypeAdd(&WolfBioMapInverse, bio, retBioId);
-	}
-	return retBioId;
-}
-
-
-
 int sgx_SSL_set_session_id_context(WOLFSSL_SSL_IDENTIFIER sslId, unsigned char*buffer, size_t len)
 {
 	WOLFSSL* ssl =  WolfSSLMapTypeGet(&WolfSSLMap, sslId);
@@ -79,16 +58,6 @@ int sgx_SSL_set_session_id_context(WOLFSSL_SSL_IDENTIFIER sslId, unsigned char*b
 	}
 	
 	return wolfSSL_set_session_id_context(ssl, buffer, len);
-}
-
-void sgx_SSL_set_app_data(WOLFSSL_SSL_IDENTIFIER sslId, void* arg)
-{
-	WOLFSSL* ssl =  WolfSSLMapTypeGet(&WolfSSLMap, sslId);
-	if (ssl == NULL)
-	{
-		return;
-	}
-	wolfSSL_set_app_data(ssl, arg);
 }
 
 void sgx_SSL_set_verify_result(WOLFSSL_SSL_IDENTIFIER sslId, long verify_result)
@@ -195,4 +164,234 @@ WOLFSSL_SSL_SESSION_IDENTIFIER sgx_d2i_SSL_SESSION(WOLFSSL_SSL_SESSION_IDENTIFIE
 		*sessionOut = sessionId;
 	}
 	return sessionId;
+}
+
+
+void sgx_SSL_set_bio(WOLFSSL_SSL_IDENTIFIER sslId, WOLFSSL_BIO_IDENTIFIER readBioId, WOLFSSL_BIO_IDENTIFIER writeBioId)
+{
+	WOLFSSL* ssl = MAP_GET(WolfSSLMap, sslId);
+	WOLFSSL_BIO* rd = MAP_GET(WolfBioMap, readBioId);
+	WOLFSSL_BIO* wr = MAP_GET(WolfBioMap, writeBioId);
+	if(ssl == NULL)
+	{
+		printf("[WARN][%s] Attempt to get non-existant sslId 0x%X", __func__, sslId);
+		return;
+	}
+	if(rd == NULL || wr == NULL)
+	{
+		printf("[WARN][%s] rd(%p) or wr(%p) NULL", __func__, rd, wr);
+	}
+	wolfSSL_set_bio(ssl, rd, wr);
+}
+
+
+WOLFSSL_BIO_IDENTIFIER sgx_SSL_get_rbio(WOLFSSL_SSL_IDENTIFIER sslId)
+{
+	WOLFSSL* ssl = MAP_GET(WolfSSLMap, sslId);
+	if(ssl == NULL)
+	{
+		printf("[WARN][%s] Attempt to get non-existant sslId 0x%X", __func__, sslId);
+		return INVALID_IDENTIFIER;
+	}
+	WOLFSSL_BIO* bio = wolfSSL_SSL_get_rbio(ssl);
+	if(bio)
+	{
+		return MAP_GET(WolfBioMapInverse, bio);
+	}
+	return INVALID_IDENTIFIER;
+}
+WOLFSSL_BIO_IDENTIFIER sgx_SSL_get_wbio(WOLFSSL_SSL_IDENTIFIER sslId)
+{
+	WOLFSSL* ssl = MAP_GET(WolfSSLMap, sslId);
+	if(ssl == NULL)
+	{
+		printf("[WARN][%s] Attempt to get non-existant sslId 0x%X", __func__, sslId);
+		return INVALID_IDENTIFIER;
+	}
+	WOLFSSL_BIO* bio = wolfSSL_SSL_get_rbio(ssl);
+	if(bio)
+	{
+		return MAP_GET(WolfBioMapInverse, bio);
+	}
+	return INVALID_IDENTIFIER;
+}
+
+
+int sgx_SSL_read(WOLFSSL_SSL_IDENTIFIER sslId, unsigned char* buffer, int num)
+{
+	WOLFSSL* ssl = MAP_GET(WolfSSLMap, sslId);
+	if(ssl == NULL)
+	{
+		printf("[WARN][%s] Attempt to get non-existant sslId 0x%X", __func__, sslId);
+		return 0;
+	}
+	return wolfSSL_read(ssl, buffer, num);
+}
+int sgx_SSL_write(WOLFSSL_SSL_IDENTIFIER sslId, const unsigned char* buffer, int num)
+{
+	WOLFSSL* ssl = MAP_GET(WolfSSLMap, sslId);
+	if(ssl == NULL)
+	{
+		printf("[WARN][%s] Attempt to get non-existant sslId 0x%X", __func__, sslId);
+		return 0;
+	}
+	return wolfSSL_write(ssl, buffer, num);
+}
+
+
+int sgx_SSL_get_error(WOLFSSL_SSL_IDENTIFIER sslId, int ret)
+{
+	WOLFSSL* ssl = MAP_GET(WolfSSLMap, sslId);
+	if(ssl == NULL)
+	{
+		printf("[WARN][%s] Attempt to get non-existant sslId 0x%X", __func__, sslId);
+		return 0;
+	}
+	return wolfSSL_get_error(ssl, ret);
+}
+
+void sgx_SSL_set_app_data(WOLFSSL_SSL_IDENTIFIER sslId, void* data)
+{
+	WOLFSSL* ssl = MAP_GET(WolfSSLMap, sslId);
+	if(ssl == NULL)
+	{
+		printf("[WARN][%s] Attempt to get non-existant sslId 0x%X", __func__, sslId);
+		return;
+	}
+	wolfSSL_set_app_data(ssl, data);
+}
+
+void* sgx_SSL_get_app_data(WOLFSSL_SSL_IDENTIFIER sslId)
+{
+	WOLFSSL* ssl = MAP_GET(WolfSSLMap, sslId);
+	if(ssl == NULL)
+	{
+		printf("[WARN][%s] Attempt to get non-existant sslId 0x%X", __func__, sslId);
+		return NULL;
+	}
+	return wolfSSL_get_app_data(ssl);
+}
+
+
+long sgx_SSL_total_renegotiations(WOLFSSL_SSL_IDENTIFIER sslId)
+{
+	WOLFSSL* ssl = MAP_GET(WolfSSLMap, sslId);
+	if(ssl == NULL)
+	{
+		printf("[WARN][%s] Attempt to get non-existant sslId 0x%X", __func__, sslId);
+		return 0;
+	}
+	return wolfSSL_total_renegotiations(ssl);
+}
+
+void sgx_SSL_free(WOLFSSL_SSL_IDENTIFIER sslId)
+{
+	WOLFSSL* ssl = MAP_GET(WolfSSLMap, sslId);
+	if(ssl == NULL)
+	{
+		printf("[WARN][%s] Attempt to get non-existant sslId 0x%X", __func__, sslId);
+		return;
+	}
+	return wolfSSL_free(ssl);
+}
+
+
+int sgx_SSL_is_init_finished(WOLFSSL_SSL_IDENTIFIER sslId)
+{
+	WOLFSSL* ssl = MAP_GET(WolfSSLMap, sslId);
+	if(ssl == NULL)
+	{
+		printf("[WARN][%s] Attempt to get non-existant sslId 0x%X", __func__, sslId);
+		return 0;
+	}
+	return wolfSSL_is_init_finished(ssl);
+}
+
+int sgx_SSL_in_connect_init(WOLFSSL_SSL_IDENTIFIER sslId)
+{
+	WOLFSSL* ssl = MAP_GET(WolfSSLMap, sslId);
+	if(ssl == NULL)
+	{
+		printf("[WARN][%s] Attempt to get non-existant sslId 0x%X", __func__, sslId);
+		return 0;
+	}
+	return wolfSSL_SSL_in_connect_init(ssl);
+}
+
+
+
+int sgx_SSL_connect(WOLFSSL_SSL_IDENTIFIER sslId)
+{
+	WOLFSSL* ssl = MAP_GET(WolfSSLMap, sslId);
+	if(ssl == NULL)
+	{
+		printf("[WARN][%s] Attempt to get non-existant sslId 0x%X", __func__, sslId);
+		return 0;
+	}
+	return wolfSSL_connect(ssl);
+}
+
+
+WOLFSSL_X509_IDENTIFIER sgx_SSL_get_peer_certificate(WOLFSSL_SSL_IDENTIFIER sslId)
+{
+	WOLFSSL* ssl = MAP_GET(WolfSSLMap, sslId);
+	if(ssl == NULL)
+	{
+		printf("[WARN][%s] Attempt to get non-existant sslId 0x%X", __func__, sslId);
+		return INVALID_IDENTIFIER;
+	}
+	WOLFSSL_X509* x509 = wolfSSL_get_peer_certificate(ssl);// wolfSSL_connect(ssl);
+	if(x509 == NULL)
+		return INVALID_IDENTIFIER;
+		
+	
+	CheckExistingOrCreate(WOLFSSL_X509_IDENTIFIER, x509id, x509, WolfX509Map);
+	
+	return x509id;
+}
+
+void sgx_SSL_set_shutdown(WOLFSSL_SSL_IDENTIFIER sslId, int opt)
+{
+	WOLFSSL* ssl = MAP_GET(WolfSSLMap, sslId);
+	if(ssl == NULL)
+	{
+		printf("[WARN][%s] Attempt to get non-existant sslId 0x%X", __func__, sslId);
+		return;
+	}
+
+	wolfSSL_set_shutdown(ssl, opt);
+}
+
+int sgx_SSL_set_tlsext_host_name(WOLFSSL_SSL_IDENTIFIER sslId, const char* host_name)
+{
+	WOLFSSL* ssl = MAP_GET(WolfSSLMap, sslId);
+	if(ssl == NULL)
+	{
+		printf("[WARN][%s] Attempt to get non-existant sslId 0x%X", __func__, sslId);
+		return WOLFSSL_FAILURE;
+	}
+	return wolfSSL_set_tlsext_host_name(ssl, host_name);
+}
+
+int sgx_SSL_accept(WOLFSSL_SSL_IDENTIFIER sslId)
+{
+	WOLFSSL* ssl = MAP_GET(WolfSSLMap, sslId);
+	if(ssl == NULL)
+	{
+		printf("[WARN][%s] Attempt to get non-existant sslId 0x%X", __func__, sslId);
+		return INVALID_IDENTIFIER;
+	}
+	return wolfSSL_accept(ssl);
+}
+
+
+long sgx_SSL_get_verify_result(WOLFSSL_SSL_IDENTIFIER sslId)
+{
+	WOLFSSL* ssl = MAP_GET(WolfSSLMap, sslId);
+	if(ssl == NULL)
+	{
+		printf("[WARN][%s] Attempt to get non-existant sslId 0x%X", __func__, sslId);
+		return INVALID_IDENTIFIER;
+	}
+	return wolfSSL_get_verify_result(ssl);
 }

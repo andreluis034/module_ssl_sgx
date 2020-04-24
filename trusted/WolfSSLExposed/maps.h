@@ -10,8 +10,10 @@
 
 #define InsertInMapTwoWay(keyVar, valVar, map) RandomUntilNonExistant(keyVar, map); map ## TypeAdd(&map, keyVar, valVar); map ## InverseTypeAdd(&map ## Inverse, valVar, keyVar);
 #define CheckExistingOrCreate(outType, outVar, inVar, map) outType outVar = map ## InverseTypeGet(&map ## Inverse, inVar); if(outVar == INVALID_IDENTIFIER) {InsertInMapTwoWay(outVar, inVar, map)}
-#define MAP_GET(map, key) map ## TypeGet(&map, key);
-#define MAP_REMOVE_TWO_WAY(map, key, value) map ## TypeRemove(&map, key); map ## InverseTypeRemove(&map ## Inverse, value);
+#define MAP_GET(map, key) map ## TypeGet(&map, key)
+#define MAP_INSERT(map, key, value) map ## TypeAdd(&map, key, value)
+#define MAP_REMOVE(map, key) map ## TypeRemove(&map, key)
+#define MAP_REMOVE_TWO_WAY(map, key, value) map ## TypeRemove(&map, key); map ## InverseTypeRemove(&map ## Inverse, value)
 #define REMOVE_TWO_WAY_FROM_POINTER(map, address) {uint64_t id = MAP_GET(map ## Inverse, address); if(id != INVALID_IDENTIFIER){MAP_REMOVE_TWO_WAY(map, id, address);}}
 
 //SSL
@@ -20,7 +22,15 @@ define_two_way_maps_h(WolfSSLMap, 	WOLFSSL_SSL_IDENTIFIER, 	WOLFSSL*)
 define_two_way_maps_h(WolfSSLSessionMap, 	WOLFSSL_SSL_SESSION_IDENTIFIER, 	WOLFSSL_SESSION*)
 
 //BIO
-define_two_way_maps_h(WolfBioMap,		WOLFSSL_BIO_IDENTIFIER, 		WOLFSSL_BIO*)
+define_two_way_maps_h(WolfBioMap,			WOLFSSL_BIO_IDENTIFIER, 			WOLFSSL_BIO*)
+define_two_way_maps_h(WolfBioMethodMap,		WOLFSSL_BIO_METHOD_IDENTIFIER, 		WOLFSSL_BIO_METHOD*)
+
+//BIO Callbacks
+define_map_h(WolfBioCallbackMapType,		WOLFSSL_BIO_METHOD*, 		void**);
+define_map_h(WolfBioCallbackMap2Type,		WOLFSSL_BIO*, 				void*);
+
+extern WolfBioCallbackMapType WolfBioCallbackMap;
+extern WolfBioCallbackMap2Type WolfBioCallbackMap2;
 
 //DH
 define_two_way_maps_h(WolfDhMap,		WOLFSSL_DH_IDENTIFIER, 		WOLFSSL_DH*)

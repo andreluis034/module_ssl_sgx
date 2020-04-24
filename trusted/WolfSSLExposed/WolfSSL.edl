@@ -3,28 +3,65 @@ enclave {
 //    include "wolfssl/wolfcrypt/settings.h"
 //    include "wolfssl/wolfcrypt/types.h"
 
-	
+	untrusted{
+		int 	do_BIO_meth_write_cb(	WOLFSSL_BIO_IDENTIFIER bioId, [in, size=inl]	const char *in, int inl, 	[user_check]void* callback);
+		int 	do_BIO_meth_read_cb(	WOLFSSL_BIO_IDENTIFIER bioId, [out, size=inl]	char *in, 	 	int inl, 	[user_check]void* callback);
+		int 	do_BIO_meth_puts_cb(	WOLFSSL_BIO_IDENTIFIER bioId, [in, string]		const char *in,			 	[user_check]void* callback);
+		int 	do_BIO_meth_gets_cb(	WOLFSSL_BIO_IDENTIFIER bioId, [out, size=inl]	char *in, 	 	int inl, 	[user_check]void* callback);
+		//TODO pass ptr?
+		long 	do_BIO_meth_ctrl_cb(	WOLFSSL_BIO_IDENTIFIER bioId, 					int cmd,		long num, 	[user_check]void* callback);
+		int 	do_BIO_meth_create_cb(	WOLFSSL_BIO_IDENTIFIER bioId, [user_check]void* callback);
+		int 	do_BIO_meth_destroy_cb(	WOLFSSL_BIO_IDENTIFIER bioId, [user_check]void* callback);
+		
+		long do_BIO_info_cb(WOLFSSL_BIO_IDENTIFIER bioId, int event, [in, string]const char* parg, int iarg, long larg, long return_value, [user_check] void* callback);
+	};
 	trusted {
 
 		//SSL
 		public WOLFSSL_SSL_IDENTIFIER sgx_SSL_new(WOLFSSL_SSL_CTX_IDENTIFIER id);
 		public int sgx_SSL_set_session_id_context(WOLFSSL_SSL_IDENTIFIER ssl, [in, size=len] unsigned char*buffer, size_t len);
-		public void sgx_SSL_set_app_data(WOLFSSL_SSL_IDENTIFIER ssl, [user_check]void* arg);
 		public void sgx_SSL_set_verify_result(WOLFSSL_SSL_IDENTIFIER sslId, long verify_result);
 
-		public int 		sgx_SSL_get_shutdown(WOLFSSL_SSL_IDENTIFIER sslId);
+		public long 	sgx_SSL_get_shutdown(WOLFSSL_SSL_IDENTIFIER sslId);
 		public int 		sgx_SSL_shutdown(WOLFSSL_SSL_IDENTIFIER sslId);
 
 		public int 		sgx_SSL_get_ex_new_index(long argl, [in, size=len]char *argp, size_t len);
 		public void* 	sgx_SSL_get_ex_data(WOLFSSL_SSL_IDENTIFIER ssl, int appId);
 		public void 	sgx_SSL_set_ex_data(WOLFSSL_SSL_IDENTIFIER ssl, int appId, [user_check] void* data);
 
-		public WOLFSSL_BIO_IDENTIFIER sgx_SSL_get_wbio(WOLFSSL_SSL_IDENTIFIER ssl);
 		public int sgx_OBJ_txt2nid([in, string]const char *sn);
 		public int sgx_OBJ_obj2nid(WOLFSSL_ASN1_OBJECT_IDENTIFIER asn1Object);
 
 		public int sgx_i2d_SSL_SESSION(WOLFSSL_SSL_SESSION_IDENTIFIER session, [out, size=length] unsigned char* buffer, size_t length);
 		public WOLFSSL_SSL_SESSION_IDENTIFIER sgx_d2i_SSL_SESSION([out] WOLFSSL_SSL_SESSION_IDENTIFIER* sessionOut, [in, size=length]unsigned char* buffer, size_t length);
+
+
+		public void sgx_SSL_set_bio(WOLFSSL_SSL_IDENTIFIER ssl, WOLFSSL_BIO_IDENTIFIER readBioId, WOLFSSL_BIO_IDENTIFIER writeBioId);
+		public WOLFSSL_BIO_IDENTIFIER sgx_SSL_get_rbio(WOLFSSL_SSL_IDENTIFIER sslId);
+		public WOLFSSL_BIO_IDENTIFIER sgx_SSL_get_wbio(WOLFSSL_SSL_IDENTIFIER sslId);
+
+		public int sgx_SSL_read(WOLFSSL_SSL_IDENTIFIER sslId, [out, size=num]unsigned char* buffer, int num);
+		public int sgx_SSL_write(WOLFSSL_SSL_IDENTIFIER sslId, [in, size=num]const unsigned char* buffer, int num);
+		public int sgx_SSL_get_error(WOLFSSL_SSL_IDENTIFIER sslId, int ret);
+
+		public void sgx_SSL_set_app_data(WOLFSSL_SSL_IDENTIFIER sslId, [user_check]void* data);
+		public void* sgx_SSL_get_app_data(WOLFSSL_SSL_IDENTIFIER sslId);
+
+		public long sgx_SSL_total_renegotiations(WOLFSSL_SSL_IDENTIFIER sslId);
+		//TODO: FREE X509 from sgx_SSL_get_peer_certificate?
+		public void sgx_SSL_free(WOLFSSL_SSL_IDENTIFIER sslId); 
+
+		public int sgx_SSL_is_init_finished(WOLFSSL_SSL_IDENTIFIER sslId);
+		public int sgx_SSL_in_connect_init(WOLFSSL_SSL_IDENTIFIER sslId);
+		public int sgx_SSL_connect(WOLFSSL_SSL_IDENTIFIER sslId);
+
+		public void sgx_SSL_set_shutdown(WOLFSSL_SSL_IDENTIFIER sslId, int opt);
+		public int sgx_SSL_set_tlsext_host_name(WOLFSSL_SSL_IDENTIFIER sslId, [string, in]const char* host_name);
+
+		public int sgx_SSL_accept(WOLFSSL_SSL_IDENTIFIER sslId);
+		public long sgx_SSL_get_verify_result(WOLFSSL_SSL_IDENTIFIER sslId);
+
+		public WOLFSSL_X509_IDENTIFIER sgx_SSL_get_peer_certificate(WOLFSSL_SSL_IDENTIFIER sslId);
 
 		//BIO
 		public WOLFSSL_BIO_IDENTIFIER sgx_BIO_new_file([in, string] const char *filename, [in, string] const char *mode);
@@ -35,9 +72,44 @@ enclave {
 		public WOLFSSL_EVP_PKEY_IDENTIFIER sgx_d2i_PrivateKey_bio(WOLFSSL_BIO_IDENTIFIER bioId);
 		
 		
+		public void sgx_BIO_set_retry_read(WOLFSSL_BIO_IDENTIFIER bioId);
+		public void sgx_BIO_set_retry_write(WOLFSSL_BIO_IDENTIFIER bioId);
+
 		public int sgx_BIO_free(WOLFSSL_BIO_IDENTIFIER bioId);
+		public void sgx_BIO_meth_free(WOLFSSL_BIO_METHOD_IDENTIFIER biomId);
+
 		public WOLFSSL_BIO_METHOD_IDENTIFIER sgx_BIO_f_base64();
 		public WOLFSSL_BIO_METHOD_IDENTIFIER sgx_BIO_s_mem();
+
+		public WOLFSSL_BIO_METHOD_IDENTIFIER sgx_SSL_BIO_meth_new(int type, [string, in] const char *name);
+
+			//NOTE: These do nothing in WolfSSL
+		public void sgx_BIO_set_shutdown(WOLFSSL_BIO_IDENTIFIER bioId, int shut);
+		public long	sgx_BIO_get_shutdown(WOLFSSL_BIO_IDENTIFIER bioId);
+		public void sgx_BIO_set_init(WOLFSSL_BIO_IDENTIFIER bioId, int i);
+
+		public void sgx_BIO_clear_retry_flags(WOLFSSL_BIO_IDENTIFIER bioId);
+
+			//This value will only be stored and not actually used inside sgx so we can skip verification steps
+		public void sgx_BIO_set_data(WOLFSSL_BIO_IDENTIFIER bioId, [user_check] void* ptr);
+		public void* sgx_BIO_get_data(WOLFSSL_BIO_IDENTIFIER bioId);
+
+
+			//Implement callbacks
+		public int sgx_BIO_meth_set_write(WOLFSSL_BIO_METHOD_IDENTIFIER biomId, [user_check]void* callback);
+		public int sgx_BIO_meth_set_read(WOLFSSL_BIO_METHOD_IDENTIFIER biomId, [user_check]void* callback);
+		public int sgx_BIO_meth_set_puts(WOLFSSL_BIO_METHOD_IDENTIFIER biomId, [user_check]void* callback);
+		public int sgx_BIO_meth_set_gets(WOLFSSL_BIO_METHOD_IDENTIFIER biomId, [user_check]void* callback);
+		public int sgx_BIO_meth_set_ctrl(WOLFSSL_BIO_METHOD_IDENTIFIER biomId, [user_check]void* callback);
+		public int sgx_BIO_meth_set_create(WOLFSSL_BIO_METHOD_IDENTIFIER biomId, [user_check]void* callback);
+		public int sgx_BIO_meth_set_destroy(WOLFSSL_BIO_METHOD_IDENTIFIER biomId, [user_check]void* callback);
+
+		public void sgx_BIO_set_callback(WOLFSSL_BIO_IDENTIFIER bioId, [user_check]void* callback);
+		public void sgx_BIO_set_callback_arg(WOLFSSL_BIO_IDENTIFIER bioId, [user_check]void* data);
+		public void* sgx_BIO_get_callback_arg(WOLFSSL_BIO_IDENTIFIER bioId);
+
+		public long sgx_BIO_set_nbio(WOLFSSL_BIO_IDENTIFIER bioId, long on);
+
 
 		public int sgx_BIO_flush(WOLFSSL_BIO_IDENTIFIER bioId);
 		public int sgx_BIO_pending(WOLFSSL_BIO_IDENTIFIER bioId);
@@ -72,7 +144,7 @@ enclave {
 		public void sgx_BN_free(WOLFSSL_BIGNUM_IDENTIFIER bnId);
 		public int sgx_BN_to_int(WOLFSSL_BIGNUM_IDENTIFIER bnId, [out] int* result );
 
-		//X590
+		//X509
 		public uint64_t sgx_X509_get_ext_d2i(WOLFSSL_X509_IDENTIFIER x509id, int nid);
 
 		public WOLFSSL_ASN1_STRING_IDENTIFIER  		sgx_X509_NAME_ENTRY_get_data(WOLFSSL_X509_NAME_ENTRY_IDENTIFIER nameEntryId);
@@ -89,6 +161,9 @@ enclave {
 		public void sgx_X509_free(WOLFSSL_X509_IDENTIFIER x509id);
 		
 		public void sgx_X509_NAME_ENTRY_remove_from_map(WOLFSSL_X509_NAME_ENTRY_IDENTIFIER entryId);
+		public int sgx_X509_cmp_current_time(WOLFSSL_ASN1_TIME_IDENTIFIER timeId);
+
+		public void sgx_X509_verify_cert_error_string(long err, [out, size=len]char* output, int len);
 
 		//STACK
 		public int sgx_sk_GENERAL_NAME_num(WOLFSSL_STACK_IDENTIFIER skId);
@@ -105,6 +180,14 @@ enclave {
 		//ERR
 		public void sgx_ERR_error_string_n(unsigned long e, [out, size = len] char* buf, unsigned long len);
 		public unsigned long sgx_ERR_get_error();
+		public void sgx_ERR_clear_error();
+		public int sgx_ERR_GET_LIB(unsigned long err);
+		public int sgx_ERR_GET_REASON(unsigned long err);
+		public unsigned long sgx_ERR_peek_error();
 	
+
+		//RAND
+		public int sgx_RAND_seed([in, size=len]char* seed, int len);
+		public int sgx_RAND_status();
 	};
 };
