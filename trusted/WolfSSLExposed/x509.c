@@ -162,6 +162,19 @@ WOLFSSL_ASN1_TIME_IDENTIFIER			sgx_X509_get_notAfter(WOLFSSL_X509_IDENTIFIER x50
 	CheckExistingOrCreate(WOLFSSL_ASN1_TIME_IDENTIFIER, timeId, time, WolfAsn1TimeMap);
 	return timeId;
 }
+
+int sgx_X509_cmp_current_time(WOLFSSL_ASN1_TIME_IDENTIFIER timeId)
+{
+	WOLFSSL_ASN1_TIME* time = MAP_GET(WolfAsn1TimeMap, timeId);
+	if(time == NULL)
+	{
+		printf("[WARN][%s] Attempt to get non-existant timeId 0x%X", __func__, timeId);
+		return WOLFSSL_FAILURE;
+	}
+	return wolfSSL_X509_cmp_current_time(time);
+}
+
+
 void sgx_X509_free(WOLFSSL_X509_IDENTIFIER x509id)
 {
 	WOLFSSL_X509* x509 = MAP_GET(WolfX509Map, x509id);
@@ -177,4 +190,12 @@ void sgx_X509_free(WOLFSSL_X509_IDENTIFIER x509id)
 	REMOVE_TWO_WAY_FROM_POINTER(WolfAsn1TimeMap, 		wolfSSL_X509_get_notAfter(x509));
 
 	wolfSSL_X509_free(x509);
+}
+
+
+
+void sgx_X509_verify_cert_error_string(long err, char* output, int len)
+{
+	const char* internalStr = wolfSSL_X509_verify_cert_error_string(err);
+	strcpy_s(output, len, internalStr);
 }

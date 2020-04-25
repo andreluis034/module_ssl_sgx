@@ -54,14 +54,17 @@ ifeq ($(HAVE_WOLFSSL_BENCHMARK), 1)
 	Wolfssl_C_Extra_Flags += -DHAVE_WOLFSSL_BENCHMARK
 endif
 
-Apache_Include_Paths := -I/opt/httpd/include  -I/usr/include/apr-1.0   -I/usr/include/apr-1.0 # -I/usr/include
+Apache_Include_Paths := -I/opt/httpd/include  -I/home/andre/git/httpd/server/ -I/home/andre/git/httpd/include/ -I/usr/include/apr-1.0 # -I/usr/include
 
 App_C_Files := $(UNTRUSTED_DIR)/mod_ssl.c \
 	$(UNTRUSTED_DIR)/ssl_util_ssl.c \
 	$(UNTRUSTED_DIR)/ssl_util.c \
 	$(UNTRUSTED_DIR)/ssl_scache.c \
 	$(UNTRUSTED_DIR)/ssl_engine_mutex.c \
-	$(UNTRUSTED_DIR)/ssl_engine_log.c
+	$(UNTRUSTED_DIR)/ssl_engine_log.c \
+	$(UNTRUSTED_DIR)/ssl_engine_rand.c \
+	$(UNTRUSTED_DIR)/compatabilityLayer.c \
+	$(UNTRUSTED_DIR)/ssl_engine_io.c 
 
 App_Include_Paths := -IInclude $(Wolfssl_Include_Paths) -I$(UNTRUSTED_DIR) -I$(SGX_SDK)/include  $(Apache_Include_Paths)
 

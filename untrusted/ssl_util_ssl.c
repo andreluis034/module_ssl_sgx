@@ -172,7 +172,7 @@ int modssl_smart_shutdown(SSL ssl)
 {
     int i;
     int rc;
-    int flush;
+    long flush;
 
     /*
      * Repeat the calls, because SSL_shutdown internally dispatches through a
@@ -188,7 +188,7 @@ int modssl_smart_shutdown(SSL ssl)
 		sgx_SSL_shutdown(global_eid, &rc, ssl);
 		if(rc >= 0 && flush)
 		{
-			int is_shutdown;
+			long is_shutdown;
 			sgx_SSL_get_shutdown(global_eid, &is_shutdown, ssl);
 			if(is_shutdown & SSL_SENT_SHUTDOWN)
 			{

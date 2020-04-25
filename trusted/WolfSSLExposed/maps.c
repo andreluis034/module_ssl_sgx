@@ -37,7 +37,16 @@ define_two_way_maps_c(WolfSSLMap, 			WOLFSSL_SSL_IDENTIFIER, 			WOLFSSL*, 			has
 define_two_way_maps_c(WolfSSLSessionMap, 	WOLFSSL_SSL_SESSION_IDENTIFIER, 	WOLFSSL_SESSION*,	hashKey, equalKeys, NULL, 0)
 
 //BIO
-define_two_way_maps_c(WolfBioMap,		WOLFSSL_BIO_IDENTIFIER, 		WOLFSSL_BIO*, 			hashKey, equalKeys, NULL,0)
+define_two_way_maps_c(WolfBioMap,			WOLFSSL_BIO_IDENTIFIER, 			WOLFSSL_BIO*, 			hashKey, equalKeys, NULL,0)
+define_two_way_maps_c(WolfBioMethodMap,		WOLFSSL_BIO_METHOD_IDENTIFIER, 		WOLFSSL_BIO_METHOD*, 	hashKey, equalKeys, NULL,0)
+
+//BIO Callbacks
+define_map_c(WolfBioCallbackMapType,		WOLFSSL_BIO_METHOD*, 		void**, hashKeyInverse, equalKeysInverse, NULL);
+define_map_c(WolfBioCallbackMap2Type,		WOLFSSL_BIO*, 				void*, hashKeyInverse, equalKeysInverse, NULL);
+
+WolfBioCallbackMapType WolfBioCallbackMap;
+WolfBioCallbackMap2Type WolfBioCallbackMap2;
+
 
 //DH
 define_two_way_maps_c(WolfDhMap,		WOLFSSL_DH_IDENTIFIER, 			WOLFSSL_DH*, 		hashKey, equalKeys, NULL,0)
@@ -80,7 +89,12 @@ void InitMaps()
 
 	//BIO
 	INIT_MAP(WolfBioMap);
-	
+	INIT_MAP(WolfBioMethodMap);
+
+	//BIO Callbacks
+	_INIT_MAP(WolfBioCallbackMap);
+	_INIT_MAP(WolfBioCallbackMap2);
+
 	//DH
 	INIT_MAP(WolfDhMap);
 	
