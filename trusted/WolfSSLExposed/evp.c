@@ -39,3 +39,51 @@ int sgx_i2d_PrivateKey(WOLFSSL_EVP_PKEY_IDENTIFIER keyId, unsigned char* der, si
 	return -1;
 
 }
+
+
+
+
+WOLFSSL_EVP_MD_IDENTIFIER sgx_EVP_get_digestbynid(int nid)
+{
+	WOLFSSL_EVP_MD* digest = (WOLFSSL_EVP_MD*)wolfSSL_EVP_get_digestbynid(nid);
+	if (digest == NULL)
+		return INVALID_IDENTIFIER;
+
+	CheckExistingOrCreate(WOLFSSL_EVP_MD_IDENTIFIER, digestId, digest, WolfEvpMdMap);
+
+	return digestId;
+}
+
+WOLFSSL_EVP_MD_IDENTIFIER sgx_EVP_md5()
+{
+	WOLFSSL_EVP_MD* digest = (WOLFSSL_EVP_MD*)wolfSSL_EVP_md5();
+	if(digest == NULL)
+		return INVALID_IDENTIFIER;
+	
+	CheckExistingOrCreate(WOLFSSL_EVP_MD_IDENTIFIER, digestId, digest, WolfEvpMdMap);
+
+	return digestId; 
+}
+
+WOLFSSL_EVP_MD_IDENTIFIER sgx_EVP_sha1()
+{
+	WOLFSSL_EVP_MD* digest = (WOLFSSL_EVP_MD*)wolfSSL_EVP_sha1();
+	if(digest == NULL)
+		return INVALID_IDENTIFIER;
+	
+	CheckExistingOrCreate(WOLFSSL_EVP_MD_IDENTIFIER, digestId, digest, WolfEvpMdMap);
+
+	return digestId; 
+}
+
+WOLFSSL_EVP_MD_IDENTIFIER sgx_EVP_sha256()
+{
+	WOLFSSL_EVP_MD* digest = (WOLFSSL_EVP_MD*)wolfSSL_EVP_sha256();
+	if(digest == NULL)
+		return INVALID_IDENTIFIER;
+	
+	CheckExistingOrCreate(WOLFSSL_EVP_MD_IDENTIFIER, digestId, digest, WolfEvpMdMap);
+
+	return digestId; 
+}
+

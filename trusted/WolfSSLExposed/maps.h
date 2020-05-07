@@ -9,7 +9,7 @@
 
 
 #define InsertInMapTwoWay(keyVar, valVar, map) RandomUntilNonExistant(keyVar, map); map ## TypeAdd(&map, keyVar, valVar); map ## InverseTypeAdd(&map ## Inverse, valVar, keyVar);
-#define CheckExistingOrCreate(outType, outVar, inVar, map) outType outVar = map ## InverseTypeGet(&map ## Inverse, inVar); if(outVar == INVALID_IDENTIFIER) {InsertInMapTwoWay(outVar, inVar, map)}
+#define CheckExistingOrCreate(outType, outVar, inVar, map)  outType outVar = inVar == NULL ? INVALID_IDENTIFIER : map ## InverseTypeGet(&map ## Inverse, inVar); if( inVar && outVar == INVALID_IDENTIFIER) {InsertInMapTwoWay(outVar, inVar, map)}
 #define MAP_GET(map, key) map ## TypeGet(&map, key)
 #define MAP_INSERT(map, key, value) map ## TypeAdd(&map, key, value)
 #define MAP_REMOVE(map, key) map ## TypeRemove(&map, key)
@@ -17,9 +17,10 @@
 #define REMOVE_TWO_WAY_FROM_POINTER(map, address) {uint64_t id = MAP_GET(map ## Inverse, address); if(id != INVALID_IDENTIFIER){MAP_REMOVE_TWO_WAY(map, id, address);}}
 
 //SSL
-define_two_way_maps_h(WolfSSLCtxMap, WOLFSSL_SSL_CTX_IDENTIFIER, WOLFSSL_CTX*)
-define_two_way_maps_h(WolfSSLMap, 	WOLFSSL_SSL_IDENTIFIER, 	WOLFSSL*)
+define_two_way_maps_h(WolfSSLCtxMap, 		WOLFSSL_SSL_CTX_IDENTIFIER, WOLFSSL_CTX*)
+define_two_way_maps_h(WolfSSLMap, 			WOLFSSL_SSL_IDENTIFIER, 	WOLFSSL*)
 define_two_way_maps_h(WolfSSLSessionMap, 	WOLFSSL_SSL_SESSION_IDENTIFIER, 	WOLFSSL_SESSION*)
+define_two_way_maps_h(WolfSSLCipherMap, 	WOLFSSL_SSL_CIPHER_IDENTIFIER, 		WOLFSSL_CIPHER*)
 
 //BIO
 define_two_way_maps_h(WolfBioMap,			WOLFSSL_BIO_IDENTIFIER, 			WOLFSSL_BIO*)
@@ -35,8 +36,9 @@ extern WolfBioCallbackMap2Type WolfBioCallbackMap2;
 //DH
 define_two_way_maps_h(WolfDhMap,		WOLFSSL_DH_IDENTIFIER, 		WOLFSSL_DH*)
 
-//EVP_PKEY
+//EVP
 define_two_way_maps_h(WolfEvpPkeyMap,	WOLFSSL_EVP_PKEY_IDENTIFIER, 		WOLFSSL_EVP_PKEY*)
+define_two_way_maps_h(WolfEvpMdMap,		WOLFSSL_EVP_MD_IDENTIFIER, 			WOLFSSL_EVP_MD*)
 
 
 //BASIC_CONSTRAINTS
@@ -59,6 +61,9 @@ define_two_way_maps_h(WolfBigNumberMap,	WOLFSSL_BIGNUM_IDENTIFIER, 		WOLFSSL_BIG
 define_two_way_maps_h(WolfX509Map,			WOLFSSL_X509_IDENTIFIER, 			WOLFSSL_X509*)
 define_two_way_maps_h(WolfX509NameEntryMap,	WOLFSSL_X509_NAME_ENTRY_IDENTIFIER, WOLFSSL_X509_NAME_ENTRY*)
 define_two_way_maps_h(WolfX509NameMap,		WOLFSSL_X509_NAME_IDENTIFIER, 		WOLFSSL_X509_NAME*)
+define_two_way_maps_h(WolfX509ExtensionMap,	WOLFSSL_X509_EXTENSION_IDENTIFIER, 	WOLFSSL_X509_EXTENSION*)
+define_two_way_maps_h(WolfX509AlgoMap,		WOLFSSL_X509_ALGOR_IDENTIFIER, 		WOLFSSL_X509_ALGOR*)
+define_two_way_maps_h(WolfX509PubKeyMap,	WOLFSSL_X509_PUBKEY_IDENTIFIER, 	WOLFSSL_X509_PUBKEY*)
 
 
 

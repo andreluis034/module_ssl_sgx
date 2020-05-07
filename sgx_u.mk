@@ -64,7 +64,8 @@ App_C_Files := $(UNTRUSTED_DIR)/mod_ssl.c \
 	$(UNTRUSTED_DIR)/ssl_engine_log.c \
 	$(UNTRUSTED_DIR)/ssl_engine_rand.c \
 	$(UNTRUSTED_DIR)/compatabilityLayer.c \
-	$(UNTRUSTED_DIR)/ssl_engine_io.c 
+	$(UNTRUSTED_DIR)/ssl_engine_io.c \
+	$(UNTRUSTED_DIR)/ssl_engine_vars.c 
 
 App_Include_Paths := -IInclude $(Wolfssl_Include_Paths) -I$(UNTRUSTED_DIR) -I$(SGX_SDK)/include  $(Apache_Include_Paths)
 

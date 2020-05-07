@@ -35,6 +35,7 @@ uint32_t hashKey(uint64_t key)
 define_two_way_maps_c(WolfSSLCtxMap, 		WOLFSSL_SSL_CTX_IDENTIFIER, 		WOLFSSL_CTX*, 		hashKey, equalKeys, NULL, 0)
 define_two_way_maps_c(WolfSSLMap, 			WOLFSSL_SSL_IDENTIFIER, 			WOLFSSL*, 			hashKey, equalKeys, NULL, 0)
 define_two_way_maps_c(WolfSSLSessionMap, 	WOLFSSL_SSL_SESSION_IDENTIFIER, 	WOLFSSL_SESSION*,	hashKey, equalKeys, NULL, 0)
+define_two_way_maps_c(WolfSSLCipherMap, 	WOLFSSL_SSL_CIPHER_IDENTIFIER, 		WOLFSSL_CIPHER*,	hashKey, equalKeys, NULL, 0)
 
 //BIO
 define_two_way_maps_c(WolfBioMap,			WOLFSSL_BIO_IDENTIFIER, 			WOLFSSL_BIO*, 			hashKey, equalKeys, NULL,0)
@@ -53,6 +54,7 @@ define_two_way_maps_c(WolfDhMap,		WOLFSSL_DH_IDENTIFIER, 			WOLFSSL_DH*, 		hashK
 
 //EVP_PKEY
 define_two_way_maps_c(WolfEvpPkeyMap, 	WOLFSSL_EVP_PKEY_IDENTIFIER, 	WOLFSSL_EVP_PKEY*, 	hashKey, equalKeys, NULL,0)
+define_two_way_maps_c(WolfEvpMdMap,		WOLFSSL_EVP_MD_IDENTIFIER, 		WOLFSSL_EVP_MD*, 	hashKey, equalKeys, NULL,0)
 
 
 //BASIC_CONSTRAINTS
@@ -72,6 +74,9 @@ define_two_way_maps_c(WolfBigNumberMap,	WOLFSSL_BIGNUM_IDENTIFIER, 		WOLFSSL_BIG
 define_two_way_maps_c(WolfX509Map,			WOLFSSL_X509_IDENTIFIER, 					WOLFSSL_X509*, 				hashKey, equalKeys, NULL, 0)
 define_two_way_maps_c(WolfX509NameEntryMap,	WOLFSSL_X509_NAME_ENTRY_IDENTIFIER, 		WOLFSSL_X509_NAME_ENTRY*, 	hashKey, equalKeys, NULL, 0)
 define_two_way_maps_c(WolfX509NameMap,		WOLFSSL_X509_NAME_IDENTIFIER, 				WOLFSSL_X509_NAME*, 		hashKey, equalKeys, NULL, 0)
+define_two_way_maps_c(WolfX509ExtensionMap,	WOLFSSL_X509_EXTENSION_IDENTIFIER, 			WOLFSSL_X509_EXTENSION*, 	hashKey, equalKeys, NULL, 0)
+define_two_way_maps_c(WolfX509AlgoMap,		WOLFSSL_X509_ALGOR_IDENTIFIER, 				WOLFSSL_X509_ALGOR*, 		hashKey, equalKeys, NULL, 0)
+define_two_way_maps_c(WolfX509PubKeyMap,	WOLFSSL_X509_PUBKEY_IDENTIFIER, 			WOLFSSL_X509_PUBKEY*, 		hashKey, equalKeys, NULL, 0)
 
 //STACK
 define_two_way_maps_c(WolfStackMap,			WOLFSSL_STACK_IDENTIFIER, 			WOLFSSL_STACK*, hashKey, equalKeys, NULL, 0)
@@ -86,6 +91,7 @@ void InitMaps()
 	INIT_MAP(WolfSSLCtxMap);
 	INIT_MAP(WolfSSLMap);
 	INIT_MAP(WolfSSLSessionMap);
+	INIT_MAP(WolfSSLCipherMap);
 
 	//BIO
 	INIT_MAP(WolfBioMap);
@@ -98,8 +104,9 @@ void InitMaps()
 	//DH
 	INIT_MAP(WolfDhMap);
 	
-	//EVP_PKEY
+	//EVP
 	INIT_MAP(WolfEvpPkeyMap);
+	INIT_MAP(WolfEvpMdMap);
 
 	//BASIC_CONSTRAINTS
 	INIT_MAP(WolfBasicConstraintsMap);
@@ -119,6 +126,9 @@ void InitMaps()
 	INIT_MAP(WolfX509Map);
 	INIT_MAP(WolfX509NameEntryMap);
 	INIT_MAP(WolfX509NameMap);
+	INIT_MAP(WolfX509ExtensionMap);
+	INIT_MAP(WolfX509AlgoMap);
+	INIT_MAP(WolfX509PubKeyMap);
 
 	//STACK
 	INIT_MAP(WolfStackMap);

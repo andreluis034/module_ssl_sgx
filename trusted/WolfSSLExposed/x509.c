@@ -199,3 +199,221 @@ void sgx_X509_verify_cert_error_string(long err, char* output, int len)
 	const char* internalStr = wolfSSL_X509_verify_cert_error_string(err);
 	strcpy_s(output, len, internalStr);
 }
+
+int sgx_X509_up_ref(WOLFSSL_X509_IDENTIFIER x509id)
+{
+	WOLFSSL_X509* x509 = MAP_GET(WolfX509Map, x509id);
+	if(x509 == NULL)
+		return 0;
+	return wolfSSL_X509_up_ref(x509);
+}
+
+
+int sgx_X509_NAME_oneline(WOLFSSL_X509_NAME_IDENTIFIER x509Nameid, char* buffer, size_t buffer_len)
+{
+	WOLFSSL_X509_NAME* x509Name = MAP_GET(WolfX509NameMap, x509Nameid);
+	if(x509Name == NULL)
+		return 0;
+
+	wolfSSL_X509_NAME_oneline(x509Name, buffer, buffer_len);
+	return 1;
+}
+
+
+int sgx_X509_get_signature_nid(WOLFSSL_X509_IDENTIFIER x509id)
+{
+	WOLFSSL_X509* x509 = MAP_GET(WolfX509Map, x509id);
+	if(x509 == NULL)
+		return 0;
+	
+	return wolfSSL_X509_get_signature_nid(x509);
+}
+
+
+int sgx_X509_digest(WOLFSSL_X509_IDENTIFIER x509id, WOLFSSL_EVP_MD_IDENTIFIER digestId, char* buffer, size_t buffer_len)
+{
+	WOLFSSL_X509* x509 = MAP_GET(WolfX509Map, x509id);
+	WOLFSSL_EVP_MD* digest = MAP_GET(WolfEvpMdMap, digestId);
+	if(x509 == NULL || digest == NULL)
+	{
+		printf("[WARN][%s] Attempt to get non-existant x509(%p) or digest(%p)\n", __func__, x509, digest);
+		return WOLFSSL_FAILURE;
+	}
+	int size = (int) buffer_len;
+	if(wolfSSL_X509_digest(x509, digest, buffer, &size) == WOLFSSL_SUCCESS)
+	{
+		return size;
+	}
+	return WOLFSSL_FAILURE;
+}
+
+
+WOLFSSL_ASN1_STRING_IDENTIFIER sgx_X509_EXTENSION_get_data(WOLFSSL_X509_EXTENSION_IDENTIFIER extId)
+{
+	WOLFSSL_X509_EXTENSION* ext = MAP_GET(WolfX509ExtensionMap, extId);
+	if(ext == NULL)
+		return INVALID_IDENTIFIER;
+	
+	WOLFSSL_ASN1_STRING* str= wolfSSL_X509_EXTENSION_get_data(ext);
+	CheckExistingOrCreate(WOLFSSL_ASN1_STRING_IDENTIFIER, strId, str, WolfAsn1StringMap);
+
+	return strId;
+}
+
+
+int sgx_X509V3_EXT_print(WOLFSSL_BIO_IDENTIFIER bioId, WOLFSSL_X509_EXTENSION_IDENTIFIER extId, unsigned long flag, int indent)
+{
+	WOLFSSL_BIO* bio = MAP_GET(WolfBioMap, bioId);
+	WOLFSSL_X509_EXTENSION* ext = MAP_GET(WolfX509ExtensionMap, extId);
+	if(bio == NULL || ext == NULL )
+		return WOLFSSL_FAILURE;
+
+	return	wolfSSL_X509V3_EXT_print(bio, ext, flag, indent);
+}
+
+WOLFSSL_ASN1_OBJECT_IDENTIFIER sgx_X509_EXTENSION_get_object(WOLFSSL_X509_EXTENSION_IDENTIFIER extId)
+{
+	WOLFSSL_X509_EXTENSION* ext = MAP_GET(WolfX509ExtensionMap, extId);
+	if(ext == NULL )
+		return INVALID_IDENTIFIER;
+	
+	WOLFSSL_ASN1_OBJECT* obj = wolfSSL_X509_EXTENSION_get_object(ext);
+	if(obj == NULL)
+		return INVALID_IDENTIFIER;
+	CheckExistingOrCreate(WOLFSSL_ASN1_OBJECT_IDENTIFIER, objId, obj, WolfAsn1ObjectMap);
+	return objId;
+}
+
+int sgx_X509_get_ext_count(WOLFSSL_X509_IDENTIFIER x509id)
+{
+	WOLFSSL_X509* x509 = MAP_GET(WolfX509Map, x509id);
+	
+	if(x509 == NULL)
+		return WOLFSSL_FAILURE;
+
+	return wolfSSL_X509_get_ext_count(x509);
+}
+
+
+
+long sgx_X509_get_version(WOLFSSL_X509_IDENTIFIER x509id)
+{
+	WOLFSSL_X509* x509 = MAP_GET(WolfX509Map, x509id);
+	
+	if(x509 == NULL)
+		return WOLFSSL_FAILURE;
+
+	return wolfSSL_X509_get_version(x509);
+}
+
+WOLFSSL_X509_EXTENSION_IDENTIFIER sgx_X509_get_ext(WOLFSSL_X509_IDENTIFIER x509id, int loc)
+{
+	WOLFSSL_X509* x509 = MAP_GET(WolfX509Map, x509id);
+	
+	if(x509 == NULL)
+		return INVALID_IDENTIFIER;
+
+	WOLFSSL_X509_EXTENSION* ext = wolfSSL_X509_get_ext(x509, loc);
+	if (ext == NULL)
+		return INVALID_IDENTIFIER;
+
+	CheckExistingOrCreate(WOLFSSL_X509_EXTENSION_IDENTIFIER, extId, ext, WolfX509ExtensionMap);
+
+	return extId;	 
+}
+
+void sgx_X509_ALGOR_get0(WOLFSSL_ASN1_OBJECT_IDENTIFIER* asn1ObjId,  int *pptype, const void**ppval, WOLFSSL_X509_ALGOR_IDENTIFIER algorId)
+{
+	(void)pptype;
+    (void)ppval;
+	if (asn1ObjId == NULL)
+		return;
+
+	WOLFSSL_X509_ALGOR* algor = MAP_GET(WolfX509AlgoMap, algorId);
+	if(algor == NULL)
+	{
+		*asn1ObjId = INVALID_IDENTIFIER;
+		return;
+	}
+	WOLFSSL_ASN1_OBJECT* asn1Obj;
+	wolfSSL_X509_ALGOR_get0((const WOLFSSL_ASN1_OBJECT**)&asn1Obj, NULL, NULL, algor);
+
+	CheckExistingOrCreate(WOLFSSL_ASN1_OBJECT_IDENTIFIER, objId, asn1Obj, WolfAsn1ObjectMap);
+	*asn1ObjId = objId;
+}
+
+WOLFSSL_X509_ALGOR_IDENTIFIER sgx_X509_get0_tbs_sigalg(WOLFSSL_X509_IDENTIFIER x509id)
+{
+	WOLFSSL_X509* x509 = MAP_GET(WolfX509Map, x509id);
+	
+	if(x509 == NULL)
+		return INVALID_IDENTIFIER;
+	
+	WOLFSSL_X509_ALGOR* algor = (WOLFSSL_X509_ALGOR*)wolfSSL_X509_get0_tbs_sigalg((const WOLFSSL_X509*)x509);
+
+	CheckExistingOrCreate(WOLFSSL_X509_ALGOR_IDENTIFIER, algId, algor, WolfX509AlgoMap);
+
+	return algId;
+}
+
+WOLFSSL_X509_PUBKEY_IDENTIFIER sgx_X509_get_X509_PUBKEY(WOLFSSL_X509_IDENTIFIER x509id)
+{
+	WOLFSSL_X509* x509 = MAP_GET(WolfX509Map, x509id);
+	
+	if(x509 == NULL)
+		return INVALID_IDENTIFIER;
+
+	WOLFSSL_X509_PUBKEY* key = wolfSSL_X509_get_X509_PUBKEY(x509);
+
+	CheckExistingOrCreate(WOLFSSL_X509_PUBKEY_IDENTIFIER, keyId, key, WolfX509PubKeyMap);
+
+	return keyId;
+}
+
+int sgx_X509_PUBKEY_get0_param(WOLFSSL_ASN1_OBJECT_IDENTIFIER* asn1ObjId, const unsigned char **pk, int *ppklen, void **pa, WOLFSSL_X509_PUBKEY_IDENTIFIER pubId)
+{
+	(void)pk;
+    (void)ppklen;
+	(void)pa;
+	if(asn1ObjId == NULL)
+		return WOLFSSL_FAILURE;
+
+	WOLFSSL_X509_PUBKEY* pubKey = MAP_GET(WolfX509PubKeyMap, pubId);
+	
+	if(pubKey == NULL)
+	{
+		*asn1ObjId = INVALID_IDENTIFIER;
+		return WOLFSSL_FAILURE;
+	}
+	
+	WOLFSSL_ASN1_OBJECT* obj = NULL;
+	int result = wolfSSL_X509_PUBKEY_get0_param(&obj, NULL, NULL, NULL, pubKey);
+
+	CheckExistingOrCreate(WOLFSSL_ASN1_OBJECT_IDENTIFIER, objId, obj, WolfAsn1ObjectMap);
+
+	*asn1ObjId = objId;
+	return result;
+}
+
+int sgx_X509_NAME_entry_count(WOLFSSL_X509_NAME_IDENTIFIER nameId)
+{
+	WOLFSSL_X509_NAME* name = MAP_GET(WolfX509NameMap, nameId);
+	
+	if(name == NULL)
+		return 0;
+
+	return wolfSSL_X509_NAME_entry_count(name);
+}
+
+WOLFSSL_ASN1_OBJECT_IDENTIFIER sgx_X509_NAME_ENTRY_get_object(WOLFSSL_X509_NAME_ENTRY_IDENTIFIER neId)
+{
+	WOLFSSL_X509_NAME_ENTRY* nameEntry = MAP_GET(WolfX509NameEntryMap, neId);
+	if(nameEntry == NULL)
+		return INVALID_IDENTIFIER;
+
+	WOLFSSL_ASN1_OBJECT* obj = wolfSSL_X509_NAME_ENTRY_get_object(nameEntry);
+
+	CheckExistingOrCreate(WOLFSSL_ASN1_OBJECT_IDENTIFIER, objId, obj, WolfAsn1ObjectMap);
+
+	return objId;
+}
