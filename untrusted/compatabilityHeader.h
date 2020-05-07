@@ -10,7 +10,8 @@ typedef WOLFSSL_X509_CTX_IDENTIFIER X509;
 typedef WOLFSSL_X509_EXTENSION_IDENTIFIER X509_EXTENSION;
 typedef WOLFSSL_509_STORE_IDENTIFIER X509_STORE;
 typedef WOLFSSL_509_STORE_CTX_IDENTIFIER X509_STORE_CTX;
-
+typedef WOLFSSL_X509_ALGOR_IDENTIFIER X509_ALGOR;
+typedef WOLFSSL_X509_PUBKEY_IDENTIFIER X509_PUBKEY;
 
 typedef WOLFSSL_DH_IDENTIFIER DH;
 typedef WOLFSSL_BIO_IDENTIFIER BIO;
@@ -686,4 +687,18 @@ int ASN1_TIME_print(BIO bioId, ASN1_TIME timeId);
 int i2a_ASN1_INTEGER(BIO bioId, ASN1_INTEGER asn1IntId);
 BIGNUM ASN1_INTEGER_to_BN(ASN1_INTEGER);
 long SSL_get_verify_result(SSL sslId);
+
+void ASN1_STRING_free(ASN1_STRING);
+int SSL_CIPHER_get_bits(SSL_CIPHER, int*);
+SSL_CIPHER SSL_get_current_cipher(SSL);
+char* SSL_CIPHER_get_name(SSL_CIPHER); 
+
+X509_EXTENSION X509_get_ext(X509 x509id, int loc);
+void BN_free(BIGNUM);
+long X509_get_version(X509);
+void X509_ALGOR_get0(ASN1_OBJECT* asn1ObjId, int *pptype, const void**ppval, X509_ALGOR algorId);
+X509_ALGOR X509_get0_tbs_sigalg(X509 x509id);
+X509_PUBKEY X509_get_X509_PUBKEY(X509 x509id);
+int X509_NAME_entry_count(X509_NAME nameId);
+int X509_PUBKEY_get0_param(ASN1_OBJECT* asn1ObjId, const unsigned char **pk, int *ppklen, void **pa, X509_PUBKEY pubId);
 

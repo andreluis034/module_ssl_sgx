@@ -61,6 +61,18 @@ char* X509_verify_cert_error_string(long err)
 	if((status = sgx_ ## name(global_eid, &retVal, arg1, arg2, arg3, arg4)) == SGX_SUCCESS) return retVal;	\
 	printf("[-] Call to %s failed: 0x%X\n", __func__, status); \
 }
+#define PASSTHROUGH_FUNCTION__RET__5(returnType, name, arg1Type, arg2Type, arg3Type, arg4Type, arg5Type ) returnType name(arg1Type arg1, arg2Type arg2, arg3Type arg3, arg4Type arg4, arg5Type arg5) \
+{\
+	returnType retVal; sgx_status_t status; \
+	if((status = sgx_ ## name(global_eid, &retVal, arg1, arg2, arg3, arg4, arg5)) == SGX_SUCCESS) return retVal;	\
+	printf("[-] Call to %s failed: 0x%X\n", __func__, status); \
+}
+#define PASSTHROUGH_FUNCTION4( name, arg1Type, arg2Type, arg3Type, arg4Type ) void name(arg1Type arg1, arg2Type arg2, arg3Type arg3, arg4Type arg4) \
+{\
+	sgx_status_t status; \
+	if((status = sgx_ ## name(global_eid, arg1,arg2,arg3,arg4)) == SGX_SUCCESS) return;	\
+	printf("[-] Call to %s failed: 0x%X\n", __func__, status); \
+}
 
 #define PASSTHROUGH_FUNCTION1( name, arg1Type ) void name(arg1Type arg1) \
 {\
@@ -263,3 +275,39 @@ PASSTHROUGH_FUNCTION__RET__2(int, i2a_ASN1_INTEGER, BIO, ASN1_INTEGER);
 PASSTHROUGH_FUNCTION__RET__1(BIGNUM, ASN1_INTEGER_to_BN, ASN1_INTEGER);
 PASSTHROUGH_FUNCTION__RET__1(ASN1_INTEGER, X509_get_serialNumber, X509);
 PASSTHROUGH_FUNCTION__RET__1(long, SSL_get_verify_result, SSL);
+
+PASSTHROUGH_FUNCTION1(ASN1_STRING_free, ASN1_STRING);
+PASSTHROUGH_FUNCTION__RET__2(int, SSL_CIPHER_get_bits, SSL_CIPHER, int*);
+PASSTHROUGH_FUNCTION__RET__1(SSL_CIPHER, SSL_get_current_cipher, SSL);
+
+
+		//int sgx_SSL_CIPHER_get_name(WOLFSSL_SSL_CIPHER_IDENTIFIER cipherId, [out, size=length] char* buffer, int length);
+
+#define BUFFER_SIZE 256
+char SSL_CIPHER_get_name_buffer[BUFFER_SIZE];
+char* SSL_CIPHER_get_name(SSL_CIPHER cipher)
+{
+	int retVal = 0;
+	sgx_status_t status; 
+	if((status = sgx_SSL_CIPHER_get_name(global_eid, &retVal, cipher, SSL_CIPHER_get_name_buffer, BUFFER_SIZE)) == SGX_SUCCESS) 
+	{
+		if (retVal)
+		{
+			return SSL_CIPHER_get_name_buffer;
+		}
+		return "Unknown_not_enough_memory_for_SSL_CIPHER_get_name";
+		
+	}
+
+
+	printf("[-] Call to %s failed: 0x%X\n", __func__, status); 
+}
+PASSTHROUGH_FUNCTION1(BN_free, BIGNUM);
+
+PASSTHROUGH_FUNCTION__RET__2(X509_EXTENSION, X509_get_ext, X509, int);
+PASSTHROUGH_FUNCTION__RET__1(long, X509_get_version, X509);
+PASSTHROUGH_FUNCTION4( X509_ALGOR_get0, ASN1_OBJECT*, int *, const void**, X509_ALGOR);
+PASSTHROUGH_FUNCTION__RET__1(X509_ALGOR, X509_get0_tbs_sigalg, X509);
+PASSTHROUGH_FUNCTION__RET__1(X509_PUBKEY, X509_get_X509_PUBKEY, X509);
+PASSTHROUGH_FUNCTION__RET__1(int, X509_NAME_entry_count, X509_NAME);
+PASSTHROUGH_FUNCTION__RET__5(int, X509_PUBKEY_get0_param, ASN1_OBJECT*, const unsigned char **, int *, void **, X509_PUBKEY);
