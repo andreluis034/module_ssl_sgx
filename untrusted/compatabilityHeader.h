@@ -702,3 +702,10 @@ X509_PUBKEY X509_get_X509_PUBKEY(X509 x509id);
 int X509_NAME_entry_count(X509_NAME nameId);
 int X509_PUBKEY_get0_param(ASN1_OBJECT* asn1ObjId, const unsigned char **pk, int *ppklen, void **pa, X509_PUBKEY pubId);
 
+ASN1_OBJECT X509_NAME_ENTRY_get_object(X509_NAME_ENTRY nameEntry);
+int sk_X509_num(SSL_STACK skId);
+X509 sk_X509_value(SSL_STACK x509id, int index);
+int PEM_write_bio_X509(BIO bioId, X509 x509id);
+char* BN_bn2dec(BIGNUM bn);
+char* OBJ_nid2ln(int n);
+

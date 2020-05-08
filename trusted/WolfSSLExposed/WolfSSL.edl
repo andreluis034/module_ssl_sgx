@@ -79,9 +79,9 @@ enclave {
 		public int sgx_SSL_CIPHER_get_bits(WOLFSSL_SSL_CIPHER_IDENTIFIER cipherId, [out] int *alg_bits);
 
 		public WOLFSSL_SSL_CIPHER_IDENTIFIER sgx_SSL_get_current_cipher(WOLFSSL_SSL_IDENTIFIER sslId);
-		int sgx_SSL_CIPHER_get_name(WOLFSSL_SSL_CIPHER_IDENTIFIER cipherId, [out, size=length] char* buffer, int length);
+		public int sgx_SSL_CIPHER_get_name(WOLFSSL_SSL_CIPHER_IDENTIFIER cipherId, [out, size=length] char* buffer, int length);
 
-
+		public int sgx_OBJ_nid2ln(int n, [out, size=length] char* buffer, int length);
 		//BIO
 		public WOLFSSL_BIO_IDENTIFIER sgx_BIO_new_file([in, string] const char *filename, [in, string] const char *mode);
 		public WOLFSSL_BIO_IDENTIFIER sgx_BIO_new(WOLFSSL_BIO_METHOD_IDENTIFIER methodId);
@@ -115,6 +115,7 @@ enclave {
 
 		public int sgx_BIO_get_mem_ptr(WOLFSSL_BIO_IDENTIFIER bioId, [out, size=buffer_len]uint8_t* buffer, unsigned int buffer_len);
 
+		public int sgx_PEM_write_bio_X509(WOLFSSL_BIO_IDENTIFIER bioId, WOLFSSL_X509_IDENTIFIER x509id);
 
 			//Implement callbacks
 		public int sgx_BIO_meth_set_write(WOLFSSL_BIO_METHOD_IDENTIFIER biomId, [user_check]void* callback);
@@ -175,6 +176,7 @@ enclave {
 		//BIG NUMBER
 		public void sgx_BN_free(WOLFSSL_BIGNUM_IDENTIFIER bnId);
 		public int sgx_BN_to_int(WOLFSSL_BIGNUM_IDENTIFIER bnId, [out] int* result );
+		public int sgx_BN_bn2dec(WOLFSSL_BIGNUM_IDENTIFIER bnId, [out, size=length] char* buffer, int length);
 
 		//X509
 		public uint64_t sgx_X509_get_ext_d2i(WOLFSSL_X509_IDENTIFIER x509id, int nid);
@@ -228,6 +230,9 @@ enclave {
 		public int sgx_sk_GENERAL_NAME_num(WOLFSSL_STACK_IDENTIFIER skId);
 		public WOLFSSL_GENERAL_NAME_IDENTIFIER sgx_sk_GENERAL_NAME_value(WOLFSSL_STACK_IDENTIFIER skId, int index);
 		public int sgx_sk_GENERAL_NAME_pop_free(WOLFSSL_STACK_IDENTIFIER skId);
+		
+		public int sgx_sk_X509_num(WOLFSSL_STACK_IDENTIFIER x509id);
+		public WOLFSSL_X509_IDENTIFIER sgx_sk_X509_value(WOLFSSL_STACK_IDENTIFIER x509id, int index);
 
 		//TODO onFREE clean map?
 		public WOLFSSL_ASN1_STRING_IDENTIFIER sgx_X509_EXTENSION_get_data(WOLFSSL_X509_EXTENSION_IDENTIFIER extId);

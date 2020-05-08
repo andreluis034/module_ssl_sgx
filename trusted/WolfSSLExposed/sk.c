@@ -41,3 +41,21 @@ int sgx_sk_GENERAL_NAME_pop_free(WOLFSSL_STACK_IDENTIFIER skId)
 	wolfSSL_sk_GENERAL_NAME_pop_free(sk, internal_GENERAL_NAME_free); //internal_GENERAL_NAME_free will be callsed and clean the maps
 
 }
+
+int sgx_sk_X509_num(WOLFSSL_STACK_IDENTIFIER x509id)
+{
+	WOLF_STACK_OF(WOLFSSL_X509)* sk = MAP_GET(WolfX509StackMap, x509id);
+
+	return wolfSSL_sk_X509_num(sk);
+}
+
+WOLFSSL_X509_IDENTIFIER sgx_sk_X509_value(WOLFSSL_STACK_IDENTIFIER x509id, int index)
+{
+	WOLF_STACK_OF(WOLFSSL_X509)* sk = MAP_GET(WolfX509StackMap, x509id);
+
+	WOLFSSL_X509* x509 = wolfSSL_sk_X509_value(sk, index);
+
+	CheckExistingOrCreate(WOLFSSL_X509_IDENTIFIER, x509idOut, x509, WolfX509Map);
+
+	return x509idOut;
+}

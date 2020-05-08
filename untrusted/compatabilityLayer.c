@@ -311,3 +311,49 @@ PASSTHROUGH_FUNCTION__RET__1(X509_ALGOR, X509_get0_tbs_sigalg, X509);
 PASSTHROUGH_FUNCTION__RET__1(X509_PUBKEY, X509_get_X509_PUBKEY, X509);
 PASSTHROUGH_FUNCTION__RET__1(int, X509_NAME_entry_count, X509_NAME);
 PASSTHROUGH_FUNCTION__RET__5(int, X509_PUBKEY_get0_param, ASN1_OBJECT*, const unsigned char **, int *, void **, X509_PUBKEY);
+PASSTHROUGH_FUNCTION__RET__1(ASN1_OBJECT, X509_NAME_ENTRY_get_object, X509_NAME_ENTRY);
+
+PASSTHROUGH_FUNCTION__RET__1(int, sk_X509_num, SSL_STACK);
+PASSTHROUGH_FUNCTION__RET__2(X509, sk_X509_value, SSL_STACK, int);
+PASSTHROUGH_FUNCTION__RET__2(int, PEM_write_bio_X509, BIO, X509);
+
+char* BN_bn2dec(BIGNUM bn)
+{
+	int retVal = 0;
+	sgx_status_t status; 
+	sgx_BN_bn2dec(global_eid, &retVal, bn, NULL, 0);
+	if((status = sgx_BN_bn2dec(global_eid, &retVal, bn, NULL, 0)) == SGX_SUCCESS) 
+	{
+		if (retVal == 0)
+			return NULL;
+		char * buffer = (char*)malloc(retVal + 1);		
+		if(buffer == NULL)
+			return NULL;
+		if((status = sgx_BN_bn2dec(global_eid, &retVal, bn, buffer, retVal + 1)) == SGX_SUCCESS)
+		{
+			return buffer;
+		}
+		printf("[-] 2nd Call to %s failed: 0x%X\n", __func__, status); 
+		free(buffer);
+		return NULL;
+	}
+	printf("[-] Call to %s failed: 0x%X\n", __func__, status); 
+}
+char OBJ_nid2ln_buffer[BUFFER_SIZE];
+char* OBJ_nid2ln(int n)
+{
+	int retVal = 0;
+	sgx_status_t status; 
+	if((status = sgx_OBJ_nid2ln(global_eid, &retVal, n, OBJ_nid2ln_buffer, BUFFER_SIZE)) == SGX_SUCCESS) 
+	{
+		if (retVal)
+		{
+			return OBJ_nid2ln_buffer;
+		}
+		return NULL;
+		
+	}
+
+
+	printf("[-] Call to %s failed: 0x%X\n", __func__, status); 
+}

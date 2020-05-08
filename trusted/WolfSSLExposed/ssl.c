@@ -567,6 +567,9 @@ int sgx_SSL_CIPHER_get_name(WOLFSSL_SSL_CIPHER_IDENTIFIER cipherId, char* buffer
 	if(cipher == NULL)
 		return 0;
 	const char* name = wolfSSL_CIPHER_get_name(cipher);
+	if (name == NULL)
+		return 0;
+	
 	int strLength = strlen(name);
 	if (strLength <= length)
 	{
@@ -576,4 +579,23 @@ int sgx_SSL_CIPHER_get_name(WOLFSSL_SSL_CIPHER_IDENTIFIER cipherId, char* buffer
 	memcpy(buffer, name, strLength);
 
 	return strLength;
+}
+
+int sgx_OBJ_nid2ln(int n, char* buffer, int length)
+{
+	const char* name = wolfSSL_OBJ_nid2ln(n);
+	if (name == NULL)
+		return 0;
+
+	int strLength = strlen(name);
+	if(buffer == NULL || length  == 0)
+		return strLength;
+
+	if (length <= strLength)
+	{
+		return -1;
+	}
+	memset(buffer, 0, length);
+	memcpy(buffer, name, strLength);
+	return strLength;	
 }

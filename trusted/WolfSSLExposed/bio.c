@@ -547,3 +547,12 @@ void sgx_BIO_vfree(WOLFSSL_BIO_IDENTIFIER bioId)
 }
 
 
+int sgx_PEM_write_bio_X509(WOLFSSL_BIO_IDENTIFIER bioId, WOLFSSL_X509_IDENTIFIER x509id)
+{
+	WOLFSSL_BIO *bio = MAP_GET(WolfBioMap, bioId);
+	WOLFSSL_X509 *x = MAP_GET(WolfX509Map, x509id);
+	if (bio == NULL || x == NULL)
+		return WOLFSSL_FAILURE;
+
+	return 	wolfSSL_PEM_write_bio_X509(bio, x);
+}
