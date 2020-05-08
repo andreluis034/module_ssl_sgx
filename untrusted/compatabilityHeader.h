@@ -1,15 +1,22 @@
+#pragma once
 #include "user_types.h"
 typedef WOLFSSL_SSL_IDENTIFIER SSL;
 typedef WOLFSSL_SSL_CTX_IDENTIFIER SSL_CTX;
 typedef WOLFSSL_SSL_SESSION_IDENTIFIER SSL_SESSION;
+typedef WOLFSSL_SSL_CIPHER_IDENTIFIER SSL_CIPHER;
 
 typedef WOLFSSL_X509_IDENTIFIER X509;
 typedef WOLFSSL_X509_CTX_IDENTIFIER X509;
-typedef WOLFSSL_DH_IDENTIFIER DH;
-typedef WOLFSSL_EVP_PKEY_IDENTIFIER EVP_PKEY;
-typedef WOLFSSL_BIO_IDENTIFIER BIO;
+typedef WOLFSSL_X509_EXTENSION_IDENTIFIER X509_EXTENSION;
 typedef WOLFSSL_509_STORE_IDENTIFIER X509_STORE;
 typedef WOLFSSL_509_STORE_CTX_IDENTIFIER X509_STORE_CTX;
+typedef WOLFSSL_X509_ALGOR_IDENTIFIER X509_ALGOR;
+typedef WOLFSSL_X509_PUBKEY_IDENTIFIER X509_PUBKEY;
+
+typedef WOLFSSL_DH_IDENTIFIER DH;
+typedef WOLFSSL_BIO_IDENTIFIER BIO;
+typedef WOLFSSL_BIO_METHOD_IDENTIFIER BIO_METHOD;
+
 typedef WOLFSSL_EC_GROUP_IDENTIFIER EC_GROUP;
 typedef WOLFSSL_OCSP_RESPONSE_IDENTIFIER OCSP_RESPONSE;
 typedef WOLFSSL_OCSP_REQUEST_IDENTIFIER OCSP_REQUEST;
@@ -27,7 +34,8 @@ typedef WOLFSSL_BIGNUM_IDENTIFIER BIGNUM;
 typedef WOLFSSL_STACK_IDENTIFIER SSL_STACK;
 typedef WOLFSSL_GENERAL_NAME_IDENTIFIER GENERAL_NAME;
 
-
+typedef WOLFSSL_EVP_PKEY_IDENTIFIER EVP_PKEY;
+typedef WOLFSSL_EVP_MD_IDENTIFIER EVP_MD;
 
 #define SSL_SENT_SHUTDOWN 1
 
@@ -366,7 +374,7 @@ enum {
 
 #define SSL_set_tlsext_host_name
 
-#define OPENSSL_VERSION_NUMBER 0x1000100fL
+#define OPENSSL_VERSION_NUMBER 0x1000101fL
 
 
 /* BIO CTRL */
@@ -592,7 +600,112 @@ enum wolfSSL_ErrorCodes {
 #define SSL_R_UNSUPPORTED_PROTOCOL                 VERSION_ERROR
 #define BIO_TYPE_MEM  4 //WOLFSSL_BIO_MEMORY
 
+
+#ifndef EVP_MAX_MD_SIZE
+    #define EVP_MAX_MD_SIZE   64     /* sha512 */
+#endif
+#define LIBWOLFSSL_VERSION_STRING "4.3.0"
+#define LIBWOLFSSL_VERSION_HEX 0x04003000
+#define TLSEXT_NAMETYPE_host_name       0
+
+
 int ERR_GET_LIB(unsigned long err);
 int ERR_GET_REASON(unsigned long err);
 unsigned long ERR_peek_error();
 char* X509_verify_cert_error_string(long err);
+
+#define OPENSSL_VERSION 0
+const char* OpenSSL_version(int version);
+
+
+#define NID_pkcs9_emailAddress          48
+
+
+typedef struct _WOLFSSL_BUF_MEM {
+    char*  data;   /* dereferenced */
+    size_t length; /* current length */
+    size_t max;    /* maximum length */
+} WOLFSSL_BUF_MEM;
+#define BUF_MEM WOLFSSL_BUF_MEM
+
+const char* SSL_get_version(SSL s);
+int SSL_session_reused(SSL s);
+WOLFSSL_STACK_IDENTIFIER SSL_get_peer_cert_chain(SSL s);
+char* SSL_get_servername(SSL, uint8_t);
+SSL_SESSION SSL_get_session(SSL);
+size_t SSL_get_peer_finished(SSL s, void *buf, size_t count);
+size_t SSL_get_finished(SSL s, void *buf, size_t count);
+unsigned int SSL_SESSION_get_compress_id(SSL_SESSION s);
+
+X509 SSL_get_peer_certificate(SSL ssl);
+X509 SSL_get_certificate(SSL ssl);
+int X509_up_ref(X509);
+char* X509_NAME_oneline(X509_NAME name, char* in, int sz);
+int X509_get_signature_nid(X509);
+ASN1_STRING X509_EXTENSION_get_data(X509_EXTENSION);
+int X509_digest(X509 x509, EVP_MD digest, unsigned char* buffer, unsigned int* len);
+uint8_t* SSL_SESSION_get_id(SSL_SESSION, unsigned int*);
+void X509_free(X509);
+
+
+void ASN1_OBJECT_free(ASN1_OBJECT);
+EVP_MD EVP_get_digestbynid(int);
+EVP_MD EVP_md5();
+EVP_MD EVP_sha1();
+EVP_MD EVP_sha256();
+
+BIO BIO_new(BIO_METHOD);
+BIO_METHOD BIO_s_mem();
+int BIO_free();
+
+int X509_NAME_print_ex(BIO, X509_NAME, int, unsigned long);
+
+int BIO_get_mem_ptr(BIO, BUF_MEM**);
+void BIO_vfree(BIO);
+int BIO_pending(BIO);
+int BIO_read(BIO, void*, int len);
+void ERR_clear_error();
+
+int X509V3_EXT_print(BIO, X509_EXTENSION, unsigned long, int);
+ASN1_OBJECT X509_EXTENSION_get_object(X509_EXTENSION);
+int OBJ_cmp(ASN1_OBJECT, ASN1_OBJECT);
+int X509_get_ext_count(X509);
+
+ASN1_OBJECT OBJ_txt2obj(const char*, int);
+
+
+ASN1_TIME X509_get_notBefore(X509);
+ASN1_TIME X509_get_notAfter(X509);
+X509_NAME X509_get_subject_name(X509);
+X509_NAME X509_get_issuer_name(X509);
+X509_NAME_ENTRY X509_NAME_get_entry(X509_NAME, int loc);
+ASN1_INTEGER X509_get_serialNumber(X509);
+
+int OBJ_obj2nid(ASN1_OBJECT);
+int ASN1_TIME_print(BIO bioId, ASN1_TIME timeId);
+
+int i2a_ASN1_INTEGER(BIO bioId, ASN1_INTEGER asn1IntId);
+BIGNUM ASN1_INTEGER_to_BN(ASN1_INTEGER);
+long SSL_get_verify_result(SSL sslId);
+
+void ASN1_STRING_free(ASN1_STRING);
+int SSL_CIPHER_get_bits(SSL_CIPHER, int*);
+SSL_CIPHER SSL_get_current_cipher(SSL);
+char* SSL_CIPHER_get_name(SSL_CIPHER); 
+
+X509_EXTENSION X509_get_ext(X509 x509id, int loc);
+void BN_free(BIGNUM);
+long X509_get_version(X509);
+void X509_ALGOR_get0(ASN1_OBJECT* asn1ObjId, int *pptype, const void**ppval, X509_ALGOR algorId);
+X509_ALGOR X509_get0_tbs_sigalg(X509 x509id);
+X509_PUBKEY X509_get_X509_PUBKEY(X509 x509id);
+int X509_NAME_entry_count(X509_NAME nameId);
+int X509_PUBKEY_get0_param(ASN1_OBJECT* asn1ObjId, const unsigned char **pk, int *ppklen, void **pa, X509_PUBKEY pubId);
+
+ASN1_OBJECT X509_NAME_ENTRY_get_object(X509_NAME_ENTRY nameEntry);
+int sk_X509_num(SSL_STACK skId);
+X509 sk_X509_value(SSL_STACK x509id, int index);
+int PEM_write_bio_X509(BIO bioId, X509 x509id);
+char* BN_bn2dec(BIGNUM bn);
+char* OBJ_nid2ln(int n);
+

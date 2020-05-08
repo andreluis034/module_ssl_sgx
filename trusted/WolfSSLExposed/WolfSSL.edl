@@ -62,7 +62,26 @@ enclave {
 		public long sgx_SSL_get_verify_result(WOLFSSL_SSL_IDENTIFIER sslId);
 
 		public WOLFSSL_X509_IDENTIFIER sgx_SSL_get_peer_certificate(WOLFSSL_SSL_IDENTIFIER sslId);
+		public WOLFSSL_X509_IDENTIFIER sgx_SSL_get_certificate(WOLFSSL_SSL_IDENTIFIER sslId);
 
+		public int sgx_SSL_get_version(WOLFSSL_SSL_IDENTIFIER sslId, [out, size=buffer_len]char* version, size_t buffer_len);
+		public int sgx_SSL_session_reused(WOLFSSL_SSL_IDENTIFIER sslId);
+		
+		public int sgx_SSL_get_servername(WOLFSSL_SSL_IDENTIFIER sslId, uint8_t type, [out, size=buffer_len]char* buffer, size_t buffer_len);
+
+		public WOLFSSL_SSL_SESSION_IDENTIFIER sgx_SSL_get_session(WOLFSSL_SSL_SESSION_IDENTIFIER sslId);
+		
+		public WOLFSSL_STACK_IDENTIFIER sgx_SSL_get_peer_cert_chain(WOLFSSL_SSL_IDENTIFIER sslId);
+
+		public int sgx_SSL_SESSION_get_id(WOLFSSL_SSL_SESSION_IDENTIFIER sessionId,  [out, size=buffer_len]char* buffer, size_t buffer_len);
+		public int sgx_SSL_SESSION_get_id_sz(WOLFSSL_SSL_SESSION_IDENTIFIER sessionId);
+		
+		public int sgx_SSL_CIPHER_get_bits(WOLFSSL_SSL_CIPHER_IDENTIFIER cipherId, [out] int *alg_bits);
+
+		public WOLFSSL_SSL_CIPHER_IDENTIFIER sgx_SSL_get_current_cipher(WOLFSSL_SSL_IDENTIFIER sslId);
+		public int sgx_SSL_CIPHER_get_name(WOLFSSL_SSL_CIPHER_IDENTIFIER cipherId, [out, size=length] char* buffer, int length);
+
+		public int sgx_OBJ_nid2ln(int n, [out, size=length] char* buffer, int length);
 		//BIO
 		public WOLFSSL_BIO_IDENTIFIER sgx_BIO_new_file([in, string] const char *filename, [in, string] const char *mode);
 		public WOLFSSL_BIO_IDENTIFIER sgx_BIO_new(WOLFSSL_BIO_METHOD_IDENTIFIER methodId);
@@ -94,6 +113,9 @@ enclave {
 		public void sgx_BIO_set_data(WOLFSSL_BIO_IDENTIFIER bioId, [user_check] void* ptr);
 		public void* sgx_BIO_get_data(WOLFSSL_BIO_IDENTIFIER bioId);
 
+		public int sgx_BIO_get_mem_ptr(WOLFSSL_BIO_IDENTIFIER bioId, [out, size=buffer_len]uint8_t* buffer, unsigned int buffer_len);
+
+		public int sgx_PEM_write_bio_X509(WOLFSSL_BIO_IDENTIFIER bioId, WOLFSSL_X509_IDENTIFIER x509id);
 
 			//Implement callbacks
 		public int sgx_BIO_meth_set_write(WOLFSSL_BIO_METHOD_IDENTIFIER biomId, [user_check]void* callback);
@@ -115,6 +137,7 @@ enclave {
 		public int sgx_BIO_pending(WOLFSSL_BIO_IDENTIFIER bioId);
 
 		public int sgx_BIO_read(WOLFSSL_BIO_IDENTIFIER bioId, [out, size=len] void* buffer, size_t len);
+		public void sgx_BIO_vfree(WOLFSSL_BIO_IDENTIFIER bioId);
 		
 
 		//PEM
@@ -124,7 +147,10 @@ enclave {
 		//EVP
 		public void sgx_EVP_PKEY_free(WOLFSSL_EVP_PKEY_IDENTIFIER keyId);
 		public int sgx_i2d_PrivateKey(WOLFSSL_EVP_PKEY_IDENTIFIER keyId, [out, count=count] unsigned char* der, size_t count);
-
+		public WOLFSSL_EVP_MD_IDENTIFIER sgx_EVP_get_digestbynid(int nid);
+		public WOLFSSL_EVP_MD_IDENTIFIER sgx_EVP_md5();
+		public WOLFSSL_EVP_MD_IDENTIFIER sgx_EVP_sha1();
+		public WOLFSSL_EVP_MD_IDENTIFIER sgx_EVP_sha256();
 
 		//BASIC_CONSTAINTS
 		public void sgx_BASIC_CONSTRAINTS_free(WOLFSSL_BASIC_CONSTRAINTS_IDENTIFIER bcId);
@@ -140,9 +166,17 @@ enclave {
 		public int sgx_i2a_ASN1_INTEGER(WOLFSSL_BIO_IDENTIFIER bioId, WOLFSSL_ASN1_INTEGER_IDENTIFIER asn1IntId);
 		public int sgx_ASN1_TIME_print(WOLFSSL_BIO_IDENTIFIER bioId, WOLFSSL_ASN1_TIME_IDENTIFIER timeId);
 
+		public void sgx_ASN1_OBJECT_free(WOLFSSL_ASN1_OBJECT_IDENTIFIER objId);
+
+		public int sgx_OBJ_cmp(WOLFSSL_ASN1_OBJECT_IDENTIFIER objId1, WOLFSSL_ASN1_OBJECT_IDENTIFIER objId2);
+		public WOLFSSL_ASN1_OBJECT_IDENTIFIER sgx_OBJ_txt2obj([in, string]const char* s, int no_name);
+
+		public void sgx_ASN1_STRING_free(WOLFSSL_ASN1_STRING_IDENTIFIER asn1Id);
+
 		//BIG NUMBER
 		public void sgx_BN_free(WOLFSSL_BIGNUM_IDENTIFIER bnId);
 		public int sgx_BN_to_int(WOLFSSL_BIGNUM_IDENTIFIER bnId, [out] int* result );
+		public int sgx_BN_bn2dec(WOLFSSL_BIGNUM_IDENTIFIER bnId, [out, size=length] char* buffer, int length);
 
 		//X509
 		public uint64_t sgx_X509_get_ext_d2i(WOLFSSL_X509_IDENTIFIER x509id, int nid);
@@ -165,11 +199,43 @@ enclave {
 
 		public void sgx_X509_verify_cert_error_string(long err, [out, size=len]char* output, int len);
 
+		public int sgx_X509_up_ref(WOLFSSL_X509_IDENTIFIER x509);
+
+		public int sgx_X509_NAME_oneline(WOLFSSL_X509_NAME_IDENTIFIER x509Nameid,  [out, size=buffer_len]char* buffer, size_t buffer_len);
+	
+		public int sgx_X509_get_signature_nid(WOLFSSL_X509_IDENTIFIER x509id);
+
+		public int sgx_X509_digest(WOLFSSL_X509_IDENTIFIER x509id, WOLFSSL_EVP_MD_IDENTIFIER digestId, [out, size=buffer_len]char* buffer, size_t buffer_len);
+		
+		public int sgx_X509V3_EXT_print(WOLFSSL_BIO_IDENTIFIER bioId, WOLFSSL_X509_EXTENSION_IDENTIFIER extId, unsigned long flag, int indent);
+		//TODO FREE
+		public WOLFSSL_ASN1_OBJECT_IDENTIFIER sgx_X509_EXTENSION_get_object(WOLFSSL_X509_EXTENSION_IDENTIFIER extId);
+
+		public int sgx_X509_get_ext_count(WOLFSSL_X509_IDENTIFIER x509id);
+
+		public long sgx_X509_get_version(WOLFSSL_X509_IDENTIFIER x509id);
+		public WOLFSSL_X509_EXTENSION_IDENTIFIER sgx_X509_get_ext(WOLFSSL_X509_IDENTIFIER x509id, int loc);
+		//TODO FREE
+		public void sgx_X509_ALGOR_get0([out]WOLFSSL_ASN1_OBJECT_IDENTIFIER* asn1ObjId, [user_check] int *pptype, [user_check] const void**ppval, WOLFSSL_X509_ALGOR_IDENTIFIER algorId);
+		//TODO FREE
+		public WOLFSSL_X509_ALGOR_IDENTIFIER sgx_X509_get0_tbs_sigalg(WOLFSSL_X509_IDENTIFIER x509id);
+		//TODO FREE
+		public WOLFSSL_X509_PUBKEY_IDENTIFIER sgx_X509_get_X509_PUBKEY(WOLFSSL_X509_IDENTIFIER x509id);
+		public int sgx_X509_PUBKEY_get0_param([out]WOLFSSL_ASN1_OBJECT_IDENTIFIER* asn1ObjId, [user_check]const unsigned char **pk, [user_check]int *ppklen, [user_check]void **pa, WOLFSSL_X509_PUBKEY_IDENTIFIER pubId);
+		public int sgx_X509_NAME_entry_count(WOLFSSL_X509_NAME_IDENTIFIER nameId);
+		//TODO remove from map
+		public WOLFSSL_ASN1_OBJECT_IDENTIFIER sgx_X509_NAME_ENTRY_get_object(WOLFSSL_X509_NAME_ENTRY_IDENTIFIER neId);
+
 		//STACK
 		public int sgx_sk_GENERAL_NAME_num(WOLFSSL_STACK_IDENTIFIER skId);
 		public WOLFSSL_GENERAL_NAME_IDENTIFIER sgx_sk_GENERAL_NAME_value(WOLFSSL_STACK_IDENTIFIER skId, int index);
 		public int sgx_sk_GENERAL_NAME_pop_free(WOLFSSL_STACK_IDENTIFIER skId);
+		
+		public int sgx_sk_X509_num(WOLFSSL_STACK_IDENTIFIER x509id);
+		public WOLFSSL_X509_IDENTIFIER sgx_sk_X509_value(WOLFSSL_STACK_IDENTIFIER x509id, int index);
 
+		//TODO onFREE clean map?
+		public WOLFSSL_ASN1_STRING_IDENTIFIER sgx_X509_EXTENSION_get_data(WOLFSSL_X509_EXTENSION_IDENTIFIER extId);
 
 		//GENERAL_NAME
 		public int sgx_GENERAL_NAME_get_type(WOLFSSL_GENERAL_NAME_IDENTIFIER gnId);

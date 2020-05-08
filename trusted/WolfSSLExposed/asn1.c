@@ -80,3 +80,47 @@ int sgx_ASN1_TIME_print(WOLFSSL_BIO_IDENTIFIER bioId, WOLFSSL_ASN1_TIME_IDENTIFI
 
 	return wolfSSL_ASN1_TIME_print(bio, time);
 }
+
+
+void sgx_ASN1_OBJECT_free(WOLFSSL_ASN1_OBJECT_IDENTIFIER objId)
+{
+	WOLFSSL_ASN1_OBJECT* obj = MAP_GET(WolfAsn1ObjectMap, objId);
+	if (obj == NULL)
+		return;
+
+	wolfSSL_ASN1_OBJECT_free(obj);
+}
+
+
+int sgx_OBJ_cmp(WOLFSSL_ASN1_OBJECT_IDENTIFIER objId1, WOLFSSL_ASN1_OBJECT_IDENTIFIER objId2)
+{
+	WOLFSSL_ASN1_OBJECT* obj1 = MAP_GET(WolfAsn1ObjectMap, objId1);
+	WOLFSSL_ASN1_OBJECT* obj2 = MAP_GET(WolfAsn1ObjectMap, objId2);
+	if (obj1 == NULL || obj2 == NULL)
+		return WOLFSSL_FATAL_ERROR;
+
+	return wolfSSL_OBJ_cmp(obj1, obj2);
+}
+
+
+WOLFSSL_ASN1_OBJECT_IDENTIFIER sgx_OBJ_txt2obj(const char* s, int no_name)
+{
+	WOLFSSL_ASN1_OBJECT* obj = wolfSSL_OBJ_txt2obj(s, no_name);
+	if(obj == NULL)
+		return INVALID_IDENTIFIER;
+	CheckExistingOrCreate(WOLFSSL_ASN1_OBJECT_IDENTIFIER, objId, obj, WolfAsn1ObjectMap);
+
+	return objId;
+}
+
+void sgx_ASN1_STRING_free(WOLFSSL_ASN1_STRING_IDENTIFIER asn1Id)
+{
+	WOLFSSL_ASN1_STRING* str = MAP_GET(WolfAsn1StringMap, asn1Id);
+	if (str == NULL)
+	{
+		return;
+	}
+	MAP_REMOVE_TWO_WAY(WolfAsn1StringMap, asn1Id, str);
+
+	wolfSSL_ASN1_STRING_free(str);	
+}

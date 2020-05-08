@@ -506,3 +506,53 @@ void sgx_BIO_set_callback(WOLFSSL_BIO_IDENTIFIER bioId, void* callback)
 	MAP_INSERT(WolfBioCallbackMap2, bio, callback);	
 	wolfSSL_BIO_set_callback(bio, BIO_set_callback_handler );
 }
+
+
+int sgx_BIO_get_mem_ptr(WOLFSSL_BIO_IDENTIFIER bioId, uint8_t* buffer, unsigned int buffer_len)
+{
+	WOLFSSL_BIO* bio = MAP_GET(WolfBioMap, bioId);
+	if(bio == NULL)
+	{
+		printf("[WARN][%s] Attempt to get non-existant bioId 0x%X", __func__, bioId);
+	 	return 0;
+	}
+	BUF_MEM* mem = NULL;
+	if(wolfSSL_BIO_get_mem_ptr(bio, &mem) == WOLFSSL_FAILURE)
+	{
+		return WOLFSSL_FAILURE;
+	}
+	if(buffer == NULL || buffer_len == 0)
+	{
+		return mem->length;
+	}
+	if(mem->length > buffer_len)
+	{
+		return WOLFSSL_FAILURE;
+	}
+
+	memcpy(buffer, mem->data, mem->length);
+	return mem->length;	
+}
+
+
+void sgx_BIO_vfree(WOLFSSL_BIO_IDENTIFIER bioId)
+{
+	WOLFSSL_BIO* bio = MAP_GET(WolfBioMap, bioId);
+	if(bio == NULL)
+	{
+		printf("[WARN][%s] Attempt to get non-existant bioId 0x%X", __func__, bioId);
+	 	return;
+	}
+	BIO_vfree(bio);
+}
+
+
+int sgx_PEM_write_bio_X509(WOLFSSL_BIO_IDENTIFIER bioId, WOLFSSL_X509_IDENTIFIER x509id)
+{
+	WOLFSSL_BIO *bio = MAP_GET(WolfBioMap, bioId);
+	WOLFSSL_X509 *x = MAP_GET(WolfX509Map, x509id);
+	if (bio == NULL || x == NULL)
+		return WOLFSSL_FAILURE;
+
+	return 	wolfSSL_PEM_write_bio_X509(bio, x);
+}

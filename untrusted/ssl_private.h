@@ -1088,11 +1088,11 @@ void         ssl_var_log_config_register(apr_pool_t *p);
 
 /* Extract SSL_*_DN_* variables into table 't' from SSL object 'ssl',
  * allocating from 'p': */
-void modssl_var_extract_dns(apr_table_t *t, SSL *ssl, apr_pool_t *p);
+void modssl_var_extract_dns(apr_table_t *t, SSL ssl, apr_pool_t *p);
 
 /* Extract SSL_*_SAN_* variables (subjectAltName entries) into table 't'
  * from SSL object 'ssl', allocating from 'p'. */
-void modssl_var_extract_san_entries(apr_table_t *t, SSL *ssl, apr_pool_t *p);
+void modssl_var_extract_san_entries(apr_table_t *t, SSL ssl, apr_pool_t *p);
 
 #ifndef OPENSSL_NO_OCSP
 /* Perform OCSP validation of the current cert in the given context.
