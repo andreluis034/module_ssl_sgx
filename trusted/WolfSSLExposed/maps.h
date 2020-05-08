@@ -68,7 +68,8 @@ define_two_way_maps_h(WolfX509PubKeyMap,	WOLFSSL_X509_PUBKEY_IDENTIFIER, 	WOLFSS
 
 
 //Stack
-define_two_way_maps_h(WolfStackMap,			WOLFSSL_STACK_IDENTIFIER, 			WOLFSSL_STACK*)
+define_two_way_maps_h(WolfX509StackMap,					WOLFSSL_STACK_IDENTIFIER, 			WOLF_STACK_OF(WOLFSSL_X509)*)
+define_two_way_maps_h(WolfGeneralNameStackMap,			WOLFSSL_STACK_IDENTIFIER, 			WOLF_STACK_OF(GENERAL_NAME)*)
 
 //GeneralName
 define_two_way_maps_h(WolfGeneralNameMap,			WOLFSSL_GENERAL_NAME_IDENTIFIER, 			WOLFSSL_GENERAL_NAME*)

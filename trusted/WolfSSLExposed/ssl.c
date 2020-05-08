@@ -306,7 +306,7 @@ void sgx_SSL_free(WOLFSSL_SSL_IDENTIFIER sslId)
 
 	CHECK_IF_EXISTS_AND_REMOVE(WOLFSSL_X509_IDENTIFIER, 		WOLFSSL_X509*, 		sgx_SSL_get_peer_certificate(sslId),		WolfX509Map);
 	CHECK_IF_EXISTS_AND_REMOVE(WOLFSSL_X509_IDENTIFIER, 		WOLFSSL_X509*, 		sgx_SSL_get_certificate(sslId), 			WolfX509Map);
-	CHECK_IF_EXISTS_AND_REMOVE(WOLFSSL_STACK_IDENTIFIER, 		WOLFSSL_STACK*, 	sgx_SSL_get_peer_certificate(sslId),		WolfStackMap);
+	CHECK_IF_EXISTS_AND_REMOVE(WOLFSSL_STACK_IDENTIFIER, 		WOLFSSL_STACK*, 	sgx_SSL_get_peer_certificate(sslId),		WolfX509StackMap);
 	CHECK_IF_EXISTS_AND_REMOVE(WOLFSSL_SSL_SESSION_IDENTIFIER, 	WOLFSSL_SESSION*, 	sgx_SSL_get_current_cipher(sslId), 			WolfSSLSessionMap);
 	CHECK_IF_EXISTS_AND_REMOVE(WOLFSSL_BIO_IDENTIFIER, 			WOLFSSL_BIO*, 		sgx_SSL_get_rbio(sslId), 					WolfBioMap);
 	CHECK_IF_EXISTS_AND_REMOVE(WOLFSSL_BIO_IDENTIFIER, 			WOLFSSL_BIO*, 		sgx_SSL_get_wbio(sslId), 					WolfBioMap);
@@ -477,7 +477,7 @@ WOLFSSL_STACK_IDENTIFIER sgx_SSL_get_peer_cert_chain(WOLFSSL_SSL_IDENTIFIER sslI
 	if(stack == NULL)
 		return INVALID_IDENTIFIER;
 
-	CheckExistingOrCreate(WOLFSSL_STACK_IDENTIFIER, stackId, stack, WolfStackMap);
+	CheckExistingOrCreate(WOLFSSL_STACK_IDENTIFIER, stackId, stack, WolfX509StackMap);
 
 	return stackId;
 }

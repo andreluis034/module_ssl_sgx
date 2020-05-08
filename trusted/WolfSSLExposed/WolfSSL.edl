@@ -79,6 +79,9 @@ enclave {
 		public int sgx_SSL_CIPHER_get_bits(WOLFSSL_SSL_CIPHER_IDENTIFIER cipherId, [out] int *alg_bits);
 
 		public WOLFSSL_SSL_CIPHER_IDENTIFIER sgx_SSL_get_current_cipher(WOLFSSL_SSL_IDENTIFIER sslId);
+		int sgx_SSL_CIPHER_get_name(WOLFSSL_SSL_CIPHER_IDENTIFIER cipherId, [out, size=length] char* buffer, int length);
+
+
 		//BIO
 		public WOLFSSL_BIO_IDENTIFIER sgx_BIO_new_file([in, string] const char *filename, [in, string] const char *mode);
 		public WOLFSSL_BIO_IDENTIFIER sgx_BIO_new(WOLFSSL_BIO_METHOD_IDENTIFIER methodId);
@@ -218,6 +221,7 @@ enclave {
 		public WOLFSSL_X509_PUBKEY_IDENTIFIER sgx_X509_get_X509_PUBKEY(WOLFSSL_X509_IDENTIFIER x509id);
 		public int sgx_X509_PUBKEY_get0_param([out]WOLFSSL_ASN1_OBJECT_IDENTIFIER* asn1ObjId, [user_check]const unsigned char **pk, [user_check]int *ppklen, [user_check]void **pa, WOLFSSL_X509_PUBKEY_IDENTIFIER pubId);
 		public int sgx_X509_NAME_entry_count(WOLFSSL_X509_NAME_IDENTIFIER nameId);
+		//TODO remove from map
 		public WOLFSSL_ASN1_OBJECT_IDENTIFIER sgx_X509_NAME_ENTRY_get_object(WOLFSSL_X509_NAME_ENTRY_IDENTIFIER neId);
 
 		//STACK

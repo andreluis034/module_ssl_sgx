@@ -79,7 +79,8 @@ define_two_way_maps_c(WolfX509AlgoMap,		WOLFSSL_X509_ALGOR_IDENTIFIER, 				WOLFS
 define_two_way_maps_c(WolfX509PubKeyMap,	WOLFSSL_X509_PUBKEY_IDENTIFIER, 			WOLFSSL_X509_PUBKEY*, 		hashKey, equalKeys, NULL, 0)
 
 //STACK
-define_two_way_maps_c(WolfStackMap,			WOLFSSL_STACK_IDENTIFIER, 			WOLFSSL_STACK*, hashKey, equalKeys, NULL, 0)
+define_two_way_maps_c(WolfX509StackMap,					WOLFSSL_STACK_IDENTIFIER, 			WOLF_STACK_OF(WOLFSSL_X509)*, hashKey, equalKeys, NULL, 0)
+define_two_way_maps_c(WolfGeneralNameStackMap,			WOLFSSL_STACK_IDENTIFIER, 			WOLF_STACK_OF(GENERAL_NAME)*, hashKey, equalKeys, NULL, 0)
 
 //GENERAL NAME
 define_two_way_maps_c(WolfGeneralNameMap,			WOLFSSL_GENERAL_NAME_IDENTIFIER, 			WOLFSSL_GENERAL_NAME*, hashKey, equalKeys, NULL, 0)
@@ -131,7 +132,8 @@ void InitMaps()
 	INIT_MAP(WolfX509PubKeyMap);
 
 	//STACK
-	INIT_MAP(WolfStackMap);
+	INIT_MAP(WolfX509StackMap);
+	INIT_MAP(WolfGeneralNameStackMap);
 
 
 	//GENERAL NAME

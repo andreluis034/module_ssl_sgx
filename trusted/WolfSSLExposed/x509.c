@@ -24,9 +24,9 @@ uint64_t sgx_X509_get_ext_d2i(WOLFSSL_X509_IDENTIFIER x509id, int nid)
 		return bcId;
 	case NID_subject_alt_name:
 		stack = ret;
-		RandomUntilNonExistant					(stackId, WolfStackMap);
-		WolfStackMapTypeAdd(&WolfStackMap, stackId, stack);
-		WolfStackMapInverseTypeAdd(&WolfStackMapInverse, stack, stackId);
+		RandomUntilNonExistant					(stackId, WolfGeneralNameStackMap);
+		WolfGeneralNameStackMapTypeAdd(&WolfGeneralNameStackMap, stackId, stack);
+		WolfGeneralNameStackMapInverseTypeAdd(&WolfGeneralNameStackMapInverse, stack, stackId);
 		return stackId;
 	default:
 		break;
