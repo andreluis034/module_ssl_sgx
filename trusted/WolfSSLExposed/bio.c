@@ -29,7 +29,7 @@
 	WOLFSSL_BIO_METHOD* biom = MAP_GET(WolfBioMethodMap, biomId); \
 	if(biom == NULL || callback == NULL) return WOLFSSL_FAILURE; \
 	void ** array = CreateBioCallbackArray(biom); \
-	array[BIO_WRITE_CALLBACK_INDEX] = callback; \
+	array[index] = callback; \
 	return wolfSSL_ ## methodName(biom, &methodName ## _callback_handler); \
 	}
 
