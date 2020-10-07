@@ -40,7 +40,7 @@ else
 	Urts_Library_Name := sgx_urts
 endif
 
-Wolfssl_C_Extra_Flags := -DWOLFSSL_SGX
+Wolfssl_C_Extra_Flags := -DWOLFSSL_SGX -w
 Wolfssl_Include_Paths := -I$(WOLFSSL_ROOT)/ \
 						 -I$(WOLFSSL_ROOT)/wolfcrypt/
 
@@ -54,7 +54,7 @@ ifeq ($(HAVE_WOLFSSL_BENCHMARK), 1)
 	Wolfssl_C_Extra_Flags += -DHAVE_WOLFSSL_BENCHMARK
 endif
 
-Apache_Include_Paths := -I/opt/httpd/include  -I/home/andre/git/httpd/server/ -I/home/andre/git/httpd/include/ -I/usr/include/apr-1.0 # -I/usr/include
+Apache_Include_Paths := -I/opt/httpd/include  -I/home/andre/git/httpd/server/ -I/home/andre/git/httpd/include/ -I/usr/include/apr-1.0 -I/home/andre/git/httpd/modules/md/  # -I/usr/include
 
 App_C_Files := $(UNTRUSTED_DIR)/mod_ssl.c \
 	$(UNTRUSTED_DIR)/ssl_util_ssl.c \
@@ -65,7 +65,8 @@ App_C_Files := $(UNTRUSTED_DIR)/mod_ssl.c \
 	$(UNTRUSTED_DIR)/ssl_engine_rand.c \
 	$(UNTRUSTED_DIR)/compatabilityLayer.c \
 	$(UNTRUSTED_DIR)/ssl_engine_io.c \
-	$(UNTRUSTED_DIR)/ssl_engine_vars.c 
+	$(UNTRUSTED_DIR)/ssl_engine_vars.c \
+#	$(UNTRUSTED_DIR)/ssl_engine_init.c \
 
 App_Include_Paths := -IInclude $(Wolfssl_Include_Paths) -I$(UNTRUSTED_DIR) -I$(SGX_SDK)/include  $(Apache_Include_Paths)
 
@@ -142,8 +143,8 @@ $(UNTRUSTED_DIR)/%.o: $(UNTRUSTED_DIR)/%.c
 	@echo "CC  <=  $<"
 
 $(BIN_OUTPUT): $(UNTRUSTED_DIR)/Enclave_u.o $(App_C_Objects)
-	@$(CC) $^ -o $@ $(App_Link_Flags)
-#	@$(CC) -shared $^ -o $@ $(App_Link_Flags)
+#	@$(CC) $^ -o $@ $(App_Link_Flags)
+	@$(CC) -shared $^ -o $@ $(App_Link_Flags)
 	@echo "LINK =>  $@"
 
 
