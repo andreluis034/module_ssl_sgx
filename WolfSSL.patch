@@ -1,0 +1,218 @@
+diff --git a/IDE/LINUX-SGX/sgx_t_static.mk b/IDE/LINUX-SGX/sgx_t_static.mk
+index 8a2e4b2df..6d9866ee2 100644
+--- a/IDE/LINUX-SGX/sgx_t_static.mk
++++ b/IDE/LINUX-SGX/sgx_t_static.mk
+@@ -44,7 +44,7 @@ endif
+
+ Crypto_Library_Name := sgx_tcrypto
+
+-Wolfssl_C_Extra_Flags := -DWOLFSSL_SGX
++Wolfssl_C_Extra_Flags := -DWOLFSSL_SGX -DOPENSSL_EXTRA -DSGX -DWOLFSSL_ENCRYPTED_KEYS -DHAVE_EX_DATA -DWOLFSSL_ASIO -DWOLFSSL_APACHE_HTTPD -DWOLFSSL_NGINX -DHAVE_TLS_EXTENSIONS -DWOLFSSL_CERT_GEN -DWOLFSSL_CERT_REQ -DHAVE_SNI -DOPENSSL_ALL -DHAVE_SERVER_RENEGOTIATION_INFO -DHAVE_SECURE_RENEGOTIATION -DSESSION_CERTS -DWOLFSSL_CERT_EXT -DKEEP_OUR_CERT -DWOLFSSL_KEY_GEN
+ Wolfssl_C_Files :=$(WOLFSSL_ROOT)/wolfcrypt/src/aes.c\
+                                        $(WOLFSSL_ROOT)/wolfcrypt/src/arc4.c\
+                                        $(WOLFSSL_ROOT)/wolfcrypt/src/asn.c\
+diff --git a/src/ssl.c b/src/ssl.c
+index 92e8b78dd..652b0b309 100644
+--- a/src/ssl.c
++++ b/src/ssl.c
+@@ -19,7 +19,6 @@
+  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1335, USA
+  */
+
+-
+ #ifdef HAVE_CONFIG_H
+     #include <config.h>
+ #endif
+@@ -15663,7 +15662,7 @@ int wolfSSL_set_compression(WOLFSSL* ssl)
+         #ifndef NO_FILESYSTEM
+             if (bio->type == WOLFSSL_BIO_FILE && bio->shutdown == BIO_CLOSE) {
+                 if (bio->ptr) {
+-                    XFCLOSE((XFILE)bio->ptr);
++                    //XFCLOSE((XFILE)bio->ptr);
+                 }
+             }
+         #endif
+@@ -19816,7 +19815,6 @@ int wolfSSL_EVP_MD_type(const WOLFSSL_EVP_MD *md)
+     }
+
+
+-
+     /* Storing app session context id. Any session that is imported with a
+      * different session context id will be rejected.
+      *
+@@ -24153,7 +24151,7 @@ int wolfSSL_sk_CIPHER_description(WOLFSSL_CIPHER* cipher)
+     const char* name;
+     const char *keaStr, *authStr, *encStr, *macStr, *protocol;
+     char n[MAX_SEGMENTS][MAX_SEGMENT_SZ] = {{0}};
+-    uint8_t len = MAX_DESCRIPTION_SZ-1;
++    __uint8_t len = MAX_DESCRIPTION_SZ-1;
+     const CipherSuiteInfo* cipher_names;
+     ProtocolVersion pv;
+     WOLFSSL_ENTER("wolfSSL_sk_CIPHER_description");
+@@ -26841,6 +26839,7 @@ WOLFSSL_ASN1_INTEGER* wolfSSL_X509_get_serialNumber(WOLFSSL_X509* x509)
+ #if defined(WOLFSSL_MYSQL_COMPATIBLE) || defined(WOLFSSL_NGINX) || \
+     defined(WOLFSSL_HAPROXY) || defined(OPENSSL_EXTRA) || defined(OPENSSL_ALL)
+ #ifndef NO_ASN_TIME
++
+ int wolfSSL_ASN1_TIME_print(WOLFSSL_BIO* bio, const WOLFSSL_ASN1_TIME* asnTime)
+ {
+     char buf[MAX_TIME_STRING_SZ];
+@@ -30660,8 +30659,10 @@ int wolfSSL_RAND_write_file(const char* fname)
+ /* These constant values are protocol values made by egd */
+ #if defined(USE_WOLFSSL_IO) && !defined(USE_WINDOWS_API)
+     #define WOLFSSL_EGD_NBLOCK 0x01
++#ifndef SGX
+     #include <sys/un.h>
+ #endif
++#endif
+
+ /* This collects entropy from the path nm and seeds the global PRNG with it.
+  * Makes a call to wolfSSL_RAND_Init which is not thread safe.
+@@ -30672,6 +30673,7 @@ int wolfSSL_RAND_write_file(const char* fname)
+  */
+ int wolfSSL_RAND_egd(const char* nm)
+ {
++#ifndef SGX
+ #if defined(USE_WOLFSSL_IO) && !defined(USE_WINDOWS_API) && !defined(HAVE_FIPS) && \
+     defined(HAVE_HASHDRBG)
+     struct sockaddr_un rem;
+@@ -30814,6 +30816,9 @@ int wolfSSL_RAND_egd(const char* nm)
+
+     return WOLFSSL_FATAL_ERROR;
+ #endif /* USE_WOLFSSL_IO && !USE_WINDOWS_API && !HAVE_FIPS && HAVE_HASHDRBG */
++#else /*SGX*/
++   return 0;
++#endif
+ }
+
+ #endif /* !FREERTOS_TCP */
+@@ -45090,6 +45095,7 @@ const char * wolfSSL_get_servername(WOLFSSL* ssl, byte type)
+ #endif /* NO_WOLFSSL_SERVER */
+ #endif /* HAVE_SNI */
+
++
+ WOLFSSL_CTX* wolfSSL_set_SSL_CTX(WOLFSSL* ssl, WOLFSSL_CTX* ctx)
+ {
+     if (ssl && ctx && SetSSL_CTX(ssl, ctx, 0) == WOLFSSL_SUCCESS)
+@@ -45204,7 +45210,6 @@ void wolfSSL_X509_OBJECT_free(WOLFSSL_X509_OBJECT *a)
+
+ #endif /* OPENSSL_ALL || (OPENSSL_EXTRA && (HAVE_STUNNEL || WOLFSSL_NGINX || HAVE_LIGHTY)) */
+
+-
+ #if defined(OPENSSL_EXTRA)
+
+ int wolfSSL_sk_X509_num(const WOLF_STACK_OF(WOLFSSL_X509) *s)
+diff --git a/src/wolfio.c b/src/wolfio.c
+index 6040f9f61..942c3e589 100644
+--- a/src/wolfio.c
++++ b/src/wolfio.c
+@@ -766,6 +766,7 @@ static int wolfIO_Word16ToString(char* d, word16 number)
+
+ int wolfIO_TcpConnect(SOCKET_T* sockfd, const char* ip, word16 port, int to_sec)
+ {
++#ifndef WOLFSSL_SGX
+ #ifdef HAVE_SOCKADDR
+     int ret = 0;
+     SOCKADDR_S addr;
+@@ -868,6 +869,10 @@ int wolfIO_TcpConnect(SOCKET_T* sockfd, const char* ip, word16 port, int to_sec)
+     (void)to_sec;
+     return -1;
+ #endif /* HAVE_SOCKADDR */
++#endif// WOLFSSL_SGX
++    WOLFSSL_MSG("wolfIO_TcpConnect NOT IMPLEMENTED FOR WOLFSSL_SGX");
++
++    return -1;
+ }
+
+ #ifndef HTTP_SCRATCH_BUFFER_SIZE
+diff --git a/wolfcrypt/src/evp.c b/wolfcrypt/src/evp.c
+index f08f45d2d..453cfb612 100644
+--- a/wolfcrypt/src/evp.c
++++ b/wolfcrypt/src/evp.c
+@@ -2173,7 +2173,7 @@ int wolfSSL_EVP_DigestVerifyFinal(WOLFSSL_EVP_MD_CTX *ctx,
+
+     return WOLFSSL_FAILURE;
+ }
+-
++#ifndef WOLFSSL_SGX
+ #ifdef WOLFSSL_APACHE_HTTPD
+ #if !defined(USE_WINDOWS_API) && !defined(MICROCHIP_PIC32)
+     #include <termios.h>
+@@ -2235,7 +2235,7 @@ int wolfSSL_EVP_DigestVerifyFinal(WOLFSSL_EVP_MD_CTX *ctx,
+         return ret;
+     }
+ #endif
+-
++#endif //WOLFSSL_SGX
+ /* returns 0 on success and -2 or -1 on failure */
+ int wolfSSL_EVP_read_pw_string(char* buf, int bufSz, const char* banner, int v)
+ {
+diff --git a/wolfssl/internal.h b/wolfssl/internal.h
+index 7c6e6090a..02bf3258a 100644
+--- a/wolfssl/internal.h
++++ b/wolfssl/internal.h
+@@ -3690,7 +3690,7 @@ struct WOLFSSL_X509 {
+ #endif
+     WOLFSSL_X509_NAME issuer;
+     WOLFSSL_X509_NAME subject;
+-#if defined(OPENSSL_ALL) || defined(WOLFSSL_HAPROXY)
++#if defined(OPENSSL_ALL) || defined(WOLFSSL_HAPROXY) || defined(WOLFSSL_APACHE_HTTPD)
+     WOLFSSL_X509_ALGOR algor;
+     WOLFSSL_X509_PUBKEY key;
+ #endif
+diff --git a/wolfssl/ssl.h b/wolfssl/ssl.h
+index bd97ac23e..9e42cf39d 100644
+--- a/wolfssl/ssl.h
++++ b/wolfssl/ssl.h
+@@ -27,7 +27,9 @@
+
+ #ifndef WOLFSSL_SSL_H
+ #define WOLFSSL_SSL_H
+-
++#ifdef SGX
++#include <time.h>
++#endif
+
+ /* for users not using preprocessor flags*/
+ #include <wolfssl/wolfcrypt/settings.h>
+@@ -3433,7 +3435,6 @@ WOLFSSL_API WOLFSSL_BIO* wolfSSL_BIO_new_fp(XFILE fp, int c);
+     || defined(WOLFSSL_MYSQL_COMPATIBLE) \
+     || defined(WOLFSSL_HAPROXY) \
+     || defined(OPENSSL_EXTRA)
+-
+ WOLFSSL_API WOLFSSL_BIO* wolfSSL_BIO_new_file(const char *filename, const char *mode);
+ WOLFSSL_API long wolfSSL_CTX_set_tmp_dh(WOLFSSL_CTX*, WOLFSSL_DH*);
+ WOLFSSL_API WOLFSSL_DH *wolfSSL_PEM_read_bio_DHparams(WOLFSSL_BIO *bp,
+diff --git a/wolfssl/wolfcrypt/settings.h b/wolfssl/wolfcrypt/settings.h
+index 060d8a185..8985e84ea 100644
+--- a/wolfssl/wolfcrypt/settings.h
++++ b/wolfssl/wolfcrypt/settings.h
+@@ -1588,10 +1588,11 @@ extern void uITRON4_free(void *p) ;
+     #define ECC_TIMING_RESISTANT
+     #define TFM_TIMING_RESISTANT
+     #define SINGLE_THREADED
+-    #define NO_ASN_TIME /* can not use headers such as windows.h */
++    //#define NO_ASN_TIME /* can not use headers such as windows.h */
+     #define HAVE_AESGCM
+     #define USE_CERT_BUFFERS_2048
+     #define USE_FAST_MATH
++
+ #endif /* WOLFSSL_SGX */
+
+ /* FreeScale MMCAU hardware crypto has 4 byte alignment.
+diff --git a/wolfssl/wolfcrypt/wc_port.h b/wolfssl/wolfcrypt/wc_port.h
+index 88c7bfe34..220da3aed 100644
+--- a/wolfssl/wolfcrypt/wc_port.h
++++ b/wolfssl/wolfcrypt/wc_port.h
+@@ -636,7 +636,10 @@ WOLFSSL_API int wolfCrypt_Cleanup(void);
+     #define XGMTIME(c, t)   gmtime((c))
+     #define WOLFSSL_GMTIME
+     #define USE_WOLF_TM
+-
++#elif WOLFSSL_SGX
++       #include "sgx_include.h"
++    #define XTIME(tl)       sgx_time((tl))
++    #define XGMTIME(c, t)   sgx_gmtime((c), (t))
+ #else
+     /* default */
+     /* uses complete <time.h> facility */
